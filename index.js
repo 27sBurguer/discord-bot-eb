@@ -873,11 +873,16 @@ process.on('SIGTERM', () => {
 // ============================================================
 // 🌐 Keep-Alive Ping — evita que o Render desligue o servidor
 // ============================================================
-setInterval(() => {
-  fetch(`${SERVER_URL}/ping`)
-    .then(() => console.log("💓 Mantendo o servidor acordado..."))
-    .catch(() => console.warn("⚠️ Falha ao enviar ping (possível modo sleep)"));
-}, 60 * 1000); // a cada 1 minuto
+const express = require("express");
+const app = express();
+
+app.get("/ping", (req, res) => {
+  res.status(200).send("pong");
+});
+
+app.listen(PORT, () => {
+  console.log(`💓 KeepAlive ativo na porta ${PORT}`);
+});
 
 // ============================================================
 // 🔑 LOGIN DO BOT (SEU CÓDIGO ORIGINAL - MANTENHA)
