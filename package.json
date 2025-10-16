@@ -1,18 +1,19 @@
 {
-  "name": "discord-military-bot",
+  "name": "military-bot",
   "version": "1.0.0",
-  "description": "Bot militar para Discord com verificação Roblox",
+  "description": "Bot militar para verificação Roblox-Discord",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "node index.js"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^2.7.0",
     "dotenv": "^16.3.1"
   },
-  "engines": {
-    "node": "18.x"
-  }
+  "keywords": ["discord", "bot", "military", "roblox"],
+  "author": "Seu Nome",
+  "license": "MIT"
 }
