@@ -303,7 +303,7 @@ const startHealthCheck = () => {
     const memoryUsage = process.memoryUsage();
     const memoryMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
     
-    console.log(`🤖 Bot Online - ${now} | Memória: ${memoryMB}MB | Servidores: ${discordBot.guilds?.cache?.size || 0}`);
+    console.log(`💓 Bot Online - ${now} | Memória: ${memoryMB}MB | Servidores: ${discordBot.guilds?.cache?.size || 0}`);
   }, 300000); // A cada 5 minutos
 };
 
@@ -645,7 +645,11 @@ discordBot.on("interactionCreate", async (interaction) => {
 discordBot.once("ready", () => {
   console.log(`🤖 Bot do Discord logado como ${discordBot.user.tag}`);
   discordBot.user.setActivity("Comandos Militares | /manual", { type: "WATCHING" });
+  
+  // Iniciar health check
   startHealthCheck();
+  
+  console.log('✅ Bot totalmente inicializado e pronto!');
 });
 
 // ============================================================
@@ -660,12 +664,11 @@ discordBot.once("ready", () => {
     );
     console.log("✅ Comandos registrados com sucesso!");
 
-    console.log('🚀 Starting Military Bot...');
+    console.log('🚀 Iniciando Military Bot...');
     await discordBot.login(process.env.DISCORD_TOKEN);
-    console.log(`✅ Bot successfully logged in as ${discordBot.user?.tag}`);
     
   } catch (err) {
-    console.error("❌ Erro ao iniciar bot:", err);
+    console.error("❌ Erro crítico ao iniciar bot:", err);
     process.exit(1);
   }
 })();
@@ -683,7 +686,9 @@ process.on('uncaughtException', (error) => {
 
 process.on('SIGTERM', () => {
   console.log('🔄 Received SIGTERM, shutting down gracefully...');
-  discordBot.destroy();
-  console.log('✅ Bot Discord destroyed');
+  if (discordBot && discordBot.destroy) {
+    discordBot.destroy();
+    console.log('✅ Bot Discord destroyed');
+  }
   process.exit(0);
 });

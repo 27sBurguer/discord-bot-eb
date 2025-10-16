@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js"
+    "build": "echo 'No build needed for bot'"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
