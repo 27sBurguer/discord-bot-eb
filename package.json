@@ -1,19 +1,29 @@
 {
   "name": "military-bot",
-  "version": "1.0.0",
-  "description": "Bot militar para verificação Roblox-Discord",
+  "version": "2.0.0",
+  "description": "Bot militar para integração Roblox-Discord com sistema de patentes",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "build": "echo 'No build needed for bot'"
+    "dev": "node --watch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "discord",
+    "bot",
+    "military",
+    "roblox",
+    "verification"
+  ],
+  "author": "Seu Nome",
+  "license": "MIT",
   "dependencies": {
     "discord.js": "^14.14.1",
-    "node-fetch": "^2.7.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "node-fetch": "^3.3.2"
   },
-  "keywords": ["discord", "bot", "military", "roblox"],
-  "author": "Seu Nome",
-  "license": "MIT"
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
