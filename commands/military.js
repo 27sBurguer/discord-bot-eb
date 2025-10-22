@@ -33,13 +33,13 @@ export const commands = [
     options: [
       {
         name: "usuario",
-        type: 6, // USER
+        type: 6,
         description: "🎯 Usuário que será atualizado",
         required: true,
       },
       {
         name: "patente",
-        type: 4, // INTEGER
+        type: 4,
         description: "🎖️ Número da patente (1-20)",
         required: true,
         choices: [
@@ -74,19 +74,6 @@ export const commands = [
   {
     name: "manual",
     description: "📚 Manual de instruções para verificação de conta",
-  },
-  {
-    name: "debug_user",
-    description: "🔧 Debug: Ver informações do usuário (Apenas Administradores)",
-    default_member_permissions: PermissionFlagsBits.Administrator.toString(),
-    options: [
-      {
-        name: "usuario",
-        type: 6,
-        description: "🎯 Usuário para debug",
-        required: true,
-      },
-    ],
   },
 ];
 
@@ -137,7 +124,6 @@ async function handleConectar(interaction, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // ✅ USAR O GUILD DA INTERAÇÃO ATUAL
     const guild = interaction.guild;
     const member = interaction.member;
 
@@ -158,8 +144,6 @@ async function handleConectar(interaction, client) {
     }
 
     const { newRoleName, finalNickname, robloxUsername } = await updateNicknameAndRole(member, shortTag, username);
-
-    // ✅ CORREÇÃO: Apenas atribuir Membro Verificado se a verificação for bem-sucedida
     const verifiedAssigned = await assignVerifiedRole(member);
 
     const successEmbed = createMilitaryEmbed(
@@ -177,7 +161,6 @@ async function handleConectar(interaction, client) {
       member.user.displayAvatarURL()
     );
 
-    // ✅ CANAL DE LOGS FLEXÍVEL
     const logChannel = guild.channels.cache.find(channel =>
       channel.name.toLowerCase().includes("📥│・logs-gerais")
     );
@@ -236,11 +219,9 @@ async function handleAtualizar(interaction, client) {
   try {
     const newTag = newTagFull.split(" ")[0];
     
-    // ✅ USAR O GUILD DA INTERAÇÃO ATUAL
     const guild = interaction.guild;
     const member = await guild.members.fetch(target.id);
 
-    // ✅ DEBUG: Verificar dados do usuário
     console.log(`🔍 Debug /atualizar:`, {
       target: target.tag,
       targetId: target.id,
@@ -278,7 +259,6 @@ async function handleAtualizar(interaction, client) {
       return interaction.editReply({ embeds: [noUsernameEmbed] });
     }
 
-    // ✅ FORÇAR o uso do username do Roblox
     console.log(`🎯 Atualizando com username do Roblox: ${robloxUsername}`);
     
     const { newRoleName, finalNickname } = await updateNicknameAndRole(member, newTag, robloxUsername);
@@ -299,7 +279,6 @@ async function handleAtualizar(interaction, client) {
       target.displayAvatarURL()
     );
 
-    // ✅ CANAL DE LOGS FLEXÍVEL
     const logChannel = guild.channels.cache.find(channel =>
       channel.name.toLowerCase().includes("📥│・logs-gerais")
     );

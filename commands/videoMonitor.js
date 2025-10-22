@@ -1,30 +1,22 @@
-// videoMonitor.js
 import { 
   checkAndRegisterVideoLink, 
   rewardVideoLink 
 } from '../firebase.js';
-import { createMilitaryEmbed } from '../utils/embeds.js';
 
-// Função principal de monitoramento
+import { createMilitaryEmbed } from '../utils/embeds.js';
 export async function handleVideoChannelMessage(message, client) {
-  // Verificar se a mensagem é no canal correto
   if (!message.channel.name.includes('vídeos') && !message.channel.name.includes('🎥')) {
     return;
   }
 
-  // Ignorar mensagens de bots
   if (message.author.bot) return;
-
-  // Verificar se a mensagem contém links
   const urlRegex = /https?:\/\/[^\s]+/g;
   const links = message.content.match(urlRegex);
 
   if (!links || links.length === 0) {
-    // Se não tem links, deletar a mensagem
     try {
       await message.delete();
       
-      // Enviar aviso ephemeral
       const warningEmbed = createMilitaryEmbed(
         "❌ MENSAGEM REMOVIDA",
         `**${message.author.tag}, apenas links de vídeos são permitidos neste canal!**\n\n` +
@@ -39,7 +31,6 @@ export async function handleVideoChannelMessage(message, client) {
       );
 
       await message.author.send({ embeds: [warningEmbed] }).catch(() => {
-        // Se não conseguir enviar DM, não faz nada
       });
       
     } catch (error) {
@@ -48,14 +39,12 @@ export async function handleVideoChannelMessage(message, client) {
     return;
   }
 
-  // Processar cada link encontrado
   let validLinkFound = false;
   let processedLinks = 0;
 
   for (const link of links) {
     processedLinks++;
     
-    // Verificar e registrar o link
     const result = await checkAndRegisterVideoLink(
       message.author.id,
       message.author.tag,
@@ -66,11 +55,9 @@ export async function handleVideoChannelMessage(message, client) {
     if (result.success) {
       validLinkFound = true;
       
-      // Dar recompensa
       const rewardResult = await rewardVideoLink(result.videoId, message.author.id);
       
       if (rewardResult.success) {
-        // Enviar confirmação no canal
         const successEmbed = createMilitaryEmbed(
           "🎥 VÍDEO REGISTRADO!",
           `**${message.author} enviou um link de vídeo válido!**\n\n` +
@@ -87,7 +74,6 @@ export async function handleVideoChannelMessage(message, client) {
           embeds: [successEmbed] 
         });
 
-        // Enviar confirmação privada
         const dmEmbed = createMilitaryEmbed(
           "💰 RECOMPensa RECEBIDA!",
           `**Olá ${message.author.tag}! Você recebeu 50 Bellos por compartilhar um vídeo!**\n\n` +
@@ -99,12 +85,10 @@ export async function handleVideoChannelMessage(message, client) {
         );
 
         await message.author.send({ embeds: [dmEmbed] }).catch(() => {
-          // Se não conseguir enviar DM, não faz nada
         });
 
       }
     } else {
-      // Link inválido ou duplicado
       if (result.reason === 'Link duplicado') {
         try {
           await message.delete();
@@ -148,7 +132,6 @@ export async function handleVideoChannelMessage(message, client) {
     }
   }
 
-  // Se nenhum link válido foi encontrado em uma mensagem com múltiplos links
   if (processedLinks > 0 && !validLinkFound) {
     try {
       await message.delete();

@@ -15,16 +15,14 @@ import {
 import http from 'http';
 import fetch from 'node-fetch';
 
-// Importar comandos
 import * as militaryCommands from './commands/military.js';
 import * as utilityCommands from './commands/utility.js';
 import * as adminCommands from './commands/admin.js';
 import * as eventCommands from './commands/events.js';
-import * as economyCommands from './commands/economy.js'; // ✅ NOVO
-import * as catalogCommands from './commands/catalog.js'; // ✅ NOVO
+import * as economyCommands from './commands/economy.js';
+import * as catalogCommands from './commands/catalog.js';
 import { handleVideoChannelMessage } from './commands/videoMonitor.js';
 
-// Importar utils
 import { createMilitaryEmbed } from './utils/embeds.js';
 
 import { 
@@ -35,23 +33,20 @@ import {
   getRandomDescription 
 } from './utils/statusManager.js';
 
-// ✅ INTENTS CORRIGIDAS - APENAS AS NECESSÁRIAS
 const discordBot = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers, // ✅ Necessário para ver membros
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent, // ✅ Necessário para ler conteúdo de mensagens
+    GatewayIntentBits.MessageContent,
   ],
 });
 
-// Collection para comandos
 discordBot.commands = new Collection();
 
 const SERVER_URL = process.env.SERVER_URL;
 const CLIENT_ID = process.env.CLIENT_ID;
 
-// No client.on('messageCreate'), adicione:
 discordBot.on('messageCreate', async (message) => {
   // Monitoramento do canal de vídeos
   await handleVideoChannelMessage(message, discordBot);
@@ -100,14 +95,13 @@ const allCommands = [
   ...militaryCommands.commands,
   ...utilityCommands.commands,
   ...adminCommands.commands,
-  ...eventCommands.commands, // ✅ NOVO
-  ...economyCommands.commands, // ✅ NOVO
-  ...catalogCommands.commands // ✅ NOVO
+  ...eventCommands.commands, 
+  ...economyCommands.commands, 
+  ...catalogCommands.commands 
 ];
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 
-// Função para registrar comandos em um servidor específico
 async function registerCommandsForGuild(guildId) {
   try {
     console.log(`📦 Registrando comandos no servidor: ${guildId}`);
@@ -121,7 +115,6 @@ async function registerCommandsForGuild(guildId) {
   }
 }
 
-// Adicionar comandos à Collection
 catalogCommands.commands.forEach(cmd => 
   discordBot.commands.set(cmd.name, { 
     category: 'catalog',
@@ -129,7 +122,6 @@ catalogCommands.commands.forEach(cmd =>
     data: cmd 
   })
 );
-
 economyCommands.commands.forEach(cmd => 
   discordBot.commands.set(cmd.name, { 
     category: 'economy',
@@ -137,7 +129,6 @@ economyCommands.commands.forEach(cmd =>
     data: cmd 
   })
 );
-
 militaryCommands.commands.forEach(cmd => 
   discordBot.commands.set(cmd.name, { 
     category: 'military',
@@ -159,7 +150,6 @@ adminCommands.commands.forEach(cmd =>
     data: cmd 
   })
 );
-// ✅ NOVO - Comandos de eventos
 eventCommands.commands.forEach(cmd => 
   discordBot.commands.set(cmd.name, { 
     category: 'events',
@@ -178,7 +168,6 @@ discordBot.once("ready", async () => {
 
   eventCommands.initializeEventSystem(discordBot);
 
-  // ✅ INICIALIZAR CATÁLOGO
   try {
     const { initializeCatalog } = await import('./firebase.js');
     await initializeCatalog();
@@ -186,7 +175,6 @@ discordBot.once("ready", async () => {
     console.error('❌ Erro ao inicializar catálogo:', error);
   }
 
-  // ✅ INICIALIZAR CACHE DE CONVITES
   try {
     console.log('🔍 Inicializando cache de convites...');
     const guilds = discordBot.guilds.cache;
@@ -205,7 +193,6 @@ discordBot.once("ready", async () => {
     console.error('❌ Erro ao inicializar cache de convites:', error);
   }
 
-  // ✅ TESTAR CONEXÃO COM FIREBASE
   try {
     const { testFirebaseConnection } = await import('./firebase.js');
     await testFirebaseConnection();
@@ -213,7 +200,6 @@ discordBot.once("ready", async () => {
     console.error('❌ Erro ao carregar Firebase:', error);
   }
   
-  // Registrar comandos em todos os servidores atuais
   console.log('🌍 Registrando comandos em todos os servidores...');
   const guilds = discordBot.guilds.cache;
   
@@ -221,26 +207,15 @@ discordBot.once("ready", async () => {
     await registerCommandsForGuild(guildId);
   }
   
-  // ✅ NOVO SISTEMA DE STATUS AUTOMÁTICO
   console.log('🎮 Configurando sistema de status automático...');
-  
-  // 1. Primeiro verifica se há status especial para data comemorativa
   const hasSpecialStatus = setupSpecialEventsStatus(discordBot);
   
   if (!hasSpecialStatus) {
-    // 2. Se não há status especial, configura sistema normal
-    
-    // Sistema de status rotativo (aleatório a cada 2 minutos)
     setupRotatingStatus(discordBot, 2 * 60 * 1000);
-    
-    // Sistema de status temático (muda conforme horário)
     setupThemedStatus(discordBot);
-    
-    // Sistema de status cíclico (estatísticas a cada 3 minutos)
     cycleStatusTypes(discordBot);
   }
   
-  // ✅ Atualizar descrição do bot (se possível)
   try {
     const randomDescription = getRandomDescription();
     console.log(`📝 Descrição do bot: ${randomDescription}`);
@@ -257,10 +232,8 @@ discordBot.once("ready", async () => {
 discordBot.on("guildCreate", async (guild) => {
   console.log(`🔔 Bot adicionado ao servidor: ${guild.name} (${guild.id})`);
   
-  // Registrar comandos no novo servidor
   await registerCommandsForGuild(guild.id);
   
-  // Enviar mensagem de boas-vindas
   const systemChannel = guild.systemChannel || guild.channels.cache.find(channel => 
     channel.type === 0 && channel.permissionsFor(guild.members.me).has('SendMessages')
   );
@@ -287,7 +260,6 @@ discordBot.on("guildCreate", async (guild) => {
     await systemChannel.send({ embeds: [welcomeEmbed] });
   }
   
-  // Log no console
   console.log(`✅ Comandos registrados e mensagem enviada no servidor: ${guild.name}`);
 });
 
@@ -295,7 +267,6 @@ discordBot.on("guildCreate", async (guild) => {
 // 🎯 EVENTO: Interações de Botões
 // ============================================================
 discordBot.on("interactionCreate", async (interaction) => {
-  // Se for um comando de chat
   if (interaction.isChatInputCommand()) {
     const commandData = discordBot.commands.get(interaction.commandName);
     
@@ -328,11 +299,9 @@ discordBot.on("interactionCreate", async (interaction) => {
     return;
   }
   
-  // Se for uma interação de botão
   if (interaction.isButton()) {
     const buttonId = interaction.customId;
 
-    // ✅ BOTÃO CLOSE_TICKET (não precisa de deferReply)
     if (buttonId === 'close_ticket') {
       if (interaction.channel.name.startsWith('pix-')) {
         await interaction.channel.delete();
@@ -340,12 +309,10 @@ discordBot.on("interactionCreate", async (interaction) => {
       return;
     }
 
-    // ✅ BOTÕES QUE MOSTRAM MODALS (não podem ter deferReply)
     const modalButtons = ['buy_coins_', 'buy_pix_'];
     const showsModal = modalButtons.some(prefix => buttonId.startsWith(prefix));
     
     if (showsModal) {
-      // NÃO FAZER deferReply para botões que mostram modals
       if (buttonId.startsWith('buy_coins_')) {
         const { catalogHandlers } = await import('./commands/catalog.js');
         await catalogHandlers.handleCoinPurchase(interaction, discordBot);
@@ -359,16 +326,85 @@ discordBot.on("interactionCreate", async (interaction) => {
       }
     }
     
-    // No interactionCreate, atualize a parte dos botões da lootbox:
+    if (buttonId.startsWith('admin_force_clear_')) {
+      if (buttonId.startsWith('admin_force_clear_both_')) {
+        const parts = buttonId.replace('admin_force_clear_both_', '').split('_');
+        if (parts.length >= 2) {
+          const userId1 = parts[0];
+          const userId2 = parts[1];
+          
+          const { catalogHandlers } = await import('./commands/catalog.js');
+          await catalogHandlers.handleAdminForceClear(interaction, userId1, discordBot);
+        }
+      } else {
+        const targetUserId = buttonId.replace('admin_force_clear_', '');
+        const { catalogHandlers } = await import('./commands/catalog.js');
+        await catalogHandlers.handleAdminForceClear(interaction, targetUserId, discordBot);
+      }
+      return;
+    }
+
+    if (buttonId.startsWith('admin_confirm_remove_cooldown_')) {
+      const targetUserId = buttonId.replace('admin_confirm_remove_cooldown_', '');
+      
+      const { catalogHandlers } = await import('./commands/catalog.js');
+      await catalogHandlers.handleAdminConfirmRemoveCooldown(interaction, targetUserId, discordBot);
+      return;
+    }
+
+    if (buttonId === 'admin_cancel_remove_cooldown') {
+      const { catalogHandlers } = await import('./commands/catalog.js');
+      await catalogHandlers.handleAdminCancelRemoveCooldown(interaction, discordBot);
+      return;
+    }
+
+    if (buttonId.startsWith('accept_marriage_')) {
+      const parts = buttonId.replace('accept_marriage_', '').split('_');
+      if (parts.length >= 2) {
+        const userId1 = parts[0];
+        const userId2 = parts[1];
+        
+        const { catalogHandlers } = await import('./commands/catalog.js');
+        await catalogHandlers.handleAcceptMarriage(interaction, userId1, userId2, discordBot);
+      }
+      return;
+    }
+
+    if (buttonId.startsWith('reject_marriage_')) {
+      const parts = buttonId.replace('reject_marriage_', '').split('_');
+      if (parts.length >= 2) {
+        const userId1 = parts[0];
+        const userId2 = parts[1];
+        
+        const { catalogHandlers } = await import('./commands/catalog.js');
+        await catalogHandlers.handleRejectMarriage(interaction, userId1, userId2, discordBot);
+      }
+      return;
+    }
+
+    if (buttonId.startsWith('confirm_divorce_')) {
+      const userId = buttonId.replace('confirm_divorce_', '');
+      
+      const { catalogHandlers } = await import('./commands/catalog.js');
+      await catalogHandlers.handleConfirmDivorce(interaction, userId, discordBot);
+      return;
+    }
+
+    if (buttonId.startsWith('cancel_divorce_')) {
+      const userId = buttonId.replace('cancel_divorce_', '');
+      
+      const { catalogHandlers } = await import('./commands/catalog.js');
+      await catalogHandlers.handleCancelDivorce(interaction, userId, discordBot);
+      return;
+    }
+    
     if (buttonId === 'confirm_lootbox') {
-      // Já tem deferReply no handler, então está correto
       const { catalogHandlers } = await import('./commands/catalog.js');
       await catalogHandlers.handleConfirmLootbox(interaction, discordBot);
       return;
     }
 
     if (buttonId === 'cancel_lootbox') {
-      // ✅ ADICIONE deferReply para o botão de cancelar
       await interaction.deferReply({ ephemeral: true });
       
       const cancelEmbed = createMilitaryEmbed(
@@ -383,7 +419,6 @@ discordBot.on("interactionCreate", async (interaction) => {
       return;
     }
 
-    // ✅ BOTÕES QUE PRECISAM DE deferUpdate (atualizam a mensagem)
     const updateButtons = ['catalog_refresh', 'catalog_back'];
     
     if (updateButtons.includes(buttonId)) {
@@ -402,7 +437,6 @@ discordBot.on("interactionCreate", async (interaction) => {
       }
     }
 
-    // ✅ BOTÃO ENTREGUE ITEM - PRECISA DE deferReply ESPECÍFICO
     if (buttonId.startsWith('deliver_item_')) {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       
@@ -425,8 +459,6 @@ discordBot.on("interactionCreate", async (interaction) => {
       return;
     }
 
-    // ✅ BOTÕES QUE PRECISAM DE deferReply (resposta ephemeral normal)
-    // ADICIONE ESTA VERIFICAÇÃO PARA EVITAR DUPLO DEFER
     if (!interaction.deferred && !interaction.replied) {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     }
@@ -444,7 +476,6 @@ discordBot.on("interactionCreate", async (interaction) => {
       return;
     }
     
-    // Restante dos botões...
     if (buttonId === 'catalog_check_coins') {
       const { catalogHandlers } = await import('./commands/catalog.js');
       await catalogHandlers.handleCatalogCheckCoins(interaction, discordBot);
@@ -536,7 +567,6 @@ discordBot.on("interactionCreate", async (interaction) => {
         });
         break;
 
-      // ✅ NOVOS BOTÕES DO SISTEMA DE CONVITES
       case 'create_invite':
         await handleCreateInvite(interaction);
         break;
@@ -559,19 +589,15 @@ discordBot.on("interactionCreate", async (interaction) => {
     }
   }
 
-  // ✅ NOVO: Se for um menu de seleção (StringSelectMenu)
   if (interaction.isStringSelectMenu()) {
     if (interaction.customId === 'select_item') {
-      // ADICIONE ESTA LINHA: deferReply para menus de seleção
       await interaction.deferReply({ ephemeral: true });
-      
       const { catalogHandlers } = await import('./commands/catalog.js');
       await catalogHandlers.handleItemSelect(interaction, discordBot);
       return;
     }
   }
 
-  // ✅ NOVO: Se for um modal (formulário)
   if (interaction.isModalSubmit()) {
     if (interaction.customId.startsWith('purchase_modal_')) {
       const { catalogHandlers } = await import('./commands/catalog.js');
@@ -584,10 +610,8 @@ discordBot.on("interactionCreate", async (interaction) => {
 // ============================================================
 // 🎉 SISTEMA DE ANÚNCIO DE CONVITES
 // ============================================================
-
 async function sendInviteAnnouncement(guild, inviter, invited, client) {
   try {
-    // Buscar o canal "🎮│・bello"
     const belloChannel = guild.channels.cache.find(channel => 
       channel.name === "🎮│・bello" ||
       channel.name.toLowerCase().includes("bello") ||
@@ -599,17 +623,14 @@ async function sendInviteAnnouncement(guild, inviter, invited, client) {
       return;
     }
     
-    // Verificar permissões
     if (!belloChannel.permissionsFor(client.user).has(['SendMessages', 'ViewChannel', 'EmbedLinks'])) {
       console.log(`❌ Sem permissões no canal ${belloChannel.name}`);
       return;
     }
     
-    // Buscar dados atualizados do convidador
     const { getUser } = await import('./firebase.js');
     const inviterData = await getUser(inviter.id);
     
-    // Criar embed militar super bonito
     const announcementEmbed = createMilitaryEmbed(
       "🎖️ NOVO RECRUTA CONVOCADO!",
       `**${inviter.tag} ACABA DE TRAZER UM NOVO SOLDADO PARA AS FILEIRAS!**\n\n` +
@@ -620,10 +641,9 @@ async function sendInviteAnnouncement(guild, inviter, invited, client) {
       `📊 **Patrimônio Militar:** ${inviterData.coins.toLocaleString('pt-BR')} Bellos\n` +
       `🏅 **Grau de Influência:** ${getMilitaryRank(inviterData.invites + 1)}\n\n` +
       `🪖 **"Um soldado convocado é uma vitória garantida!"**`,
-      0xFFD700 // Dourado
+      0xFFD700
     );
     
-    // Adicionar campos especiais
     announcementEmbed.addFields(
       {
         name: "🎯 MISSÃO CUMPRIDA",
@@ -642,7 +662,6 @@ async function sendInviteAnnouncement(guild, inviter, invited, client) {
       }
     );
     
-    // Configurar thumbnail e footer
     announcementEmbed.setThumbnail(inviter.displayAvatarURL({ size: 256 }));
     announcementEmbed.setImage('https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDA0eGxxcjJvcGJoNzZzbHBwNXl5emdjaW1xZmJhbTBnaGQ1dzZ2ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/QoPwvuCp9PRjmS8SEA/giphy.gif'); // GIF militar
     
@@ -651,7 +670,6 @@ async function sendInviteAnnouncement(guild, inviter, invited, client) {
       iconURL: client.user.displayAvatarURL()
     });
     
-    // Criar botão de ação
     const actionRow = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
@@ -664,7 +682,6 @@ async function sendInviteAnnouncement(guild, inviter, invited, client) {
           .setCustomId('check_coins')
       );
     
-    // Enviar a mensagem
     await belloChannel.send({ 
       content: `🎉 **PARABÉNS ${inviter}!** 🎉`,
       embeds: [announcementEmbed],
@@ -681,10 +698,6 @@ async function sendInviteAnnouncement(guild, inviter, invited, client) {
 // ============================================================
 // 🎖️ FUNÇÕES AUXILIARES MILITARES
 // ============================================================
-
-/**
- * Retorna o rank militar baseado no número de convites
- */
 function getMilitaryRank(invites) {
   if (invites >= 20) return "🏅 **General de Recrutamento**";
   if (invites >= 15) return "⭐ **Coronel Convocador**";
@@ -695,9 +708,6 @@ function getMilitaryRank(invites) {
   return "🪖 **Soldado Iniciante**";
 }
 
-/**
- * Retorna o próximo objetivo do usuário
- */
 function getNextObjective(currentInvites) {
   const objectives = [
     { target: 1, reward: "🎖️ Primeiro recruta - 100 Bellos" },
@@ -720,7 +730,6 @@ function getNextObjective(currentInvites) {
 // ============================================================
 // 🎯 HANDLERS DOS BOTÕES DO ANÚNCIO
 // ============================================================
-
 async function handleCreateInvite(interaction) {
   try {
     // Criar um convite temporário
@@ -794,32 +803,25 @@ async function handleCheckCoins(interaction) {
 // ============================================================
 // 🎁 SISTEMA DE RECOMPENSAS POR CONVITE
 // ============================================================
-
 async function handleInviteRewards(newMember, client) {
   try {
     console.log(`🔍 Analisando convites para: ${newMember.user.tag} (${newMember.id})`);
     
     const guild = newMember.guild;
-    
-    // Buscar todos os convites do servidor
     const invites = await guild.invites.fetch();
     console.log(`📋 ${invites.size} convites encontrados no servidor`);
     
-    // Buscar o cache anterior de convites (se existir)
     const cachedInvites = client.inviteCache || new Map();
     client.inviteCache = new Map();
     
-    // Preencher o cache atual
     invites.forEach(invite => {
       client.inviteCache.set(invite.code, invite.uses);
     });
     
-    // Comparar com o cache anterior para encontrar quem convidou
     for (const [code, currentUses] of client.inviteCache) {
       const previousUses = cachedInvites.get(code) || 0;
       
       if (currentUses > previousUses) {
-        // Este convite foi usado!
         const invite = invites.get(code);
         
         if (invite && invite.inviter && invite.inviter.id !== client.user.id) {
@@ -827,32 +829,24 @@ async function handleInviteRewards(newMember, client) {
           const invited = newMember.user;
           
           console.log(`🎯 Convite detectado: ${inviter.tag} (${inviter.id}) convidou ${invited.tag} (${invited.id})`);
-          
-          // Importar funções do Firebase
           const { registerInvite, hasUserBeenInvited, forceCreateUser } = await import('./firebase.js');
-          
-          // Verificar se é um convite válido (não é duplicata)
           const alreadyInvited = await hasUserBeenInvited(invited.id);
           
           if (alreadyInvited) {
             console.log(`🚫 ${invited.tag} já foi convidado antes - ignorando recompensa`);
           } else {
             try {
-              // Garantir que o convidador existe no banco
               console.log(`👤 Garantindo que convidador existe: ${inviter.id}`);
               await forceCreateUser(inviter.id);
               
-              // Registrar o convite e dar recompensa
               const result = await registerInvite(inviter.id, invited.id);
               
               if (result.success) {
                 console.log(`✅ Recompensa de convite dada para: ${inviter.tag}`);
   
-                // Atualizar estatística do usuário
                 const { addUserInvite } = await import('./firebase.js');
                 await addUserInvite(inviter.id);
                 
-                // 🔥 NOVO: ENVIAR MENSAGEM BONITA NO CANAL "🎮│・bello"
                 await sendInviteAnnouncement(guild, inviter, invited, client);
               } else {
                 console.log(`❌ Falha no registro do convite: ${result.reason}`);
@@ -862,7 +856,7 @@ async function handleInviteRewards(newMember, client) {
             }
           }
         }
-        break; // Encontrou o convite usado, pode parar
+        break;
       }
     }
     
@@ -877,25 +871,18 @@ async function handleInviteRewards(newMember, client) {
 discordBot.on("guildMemberAdd", async (member) => {
   console.log(`🆕 Novo membro entrou: ${member.user.tag} no servidor: ${member.guild.name}`);
   
-  // Esperar um pouco para garantir que o membro está completamente carregado
   setTimeout(async () => {
     try {
-      // ✅ CORREÇÃO: Apenas atribuir cargo Civis, NÃO Membro Verificado
       const civilAssigned = await assignCivilRole(member);
       
       if (!civilAssigned) {
         console.log(`⚠️ Não foi possível atribuir cargo Civis para: ${member.user.tag}`);
       }
 
-      // ✅ NOVO: SISTEMA DE DETECÇÃO DE CONVITES
       await handleInviteRewards(member, discordBot);
-
-      // ✅ CORREÇÃO: Busca mais flexível do canal de boas-vindas
       const welcomeChannel = member.guild.channels.cache.find(channel => {
-        // Verificar se é canal de texto
         if (channel.type !== 0) return false;
         
-        // Buscar por vários padrões de nome
         const channelName = channel.name.toLowerCase();
         return (
           channelName.includes("🚪") ||
@@ -903,14 +890,13 @@ discordBot.on("guildMemberAdd", async (member) => {
           channelName.includes("boas-vindas") ||
           channelName.includes("welcome") ||
           channelName.includes("bem-vindo") ||
-          channelName === "🚪│・entrada" || // Nome exato
+          channelName === "🚪│・entrada" ||
           channelName === "entrada" ||
           channelName === "boas-vindas"
         );
       });
 
       if (welcomeChannel) {
-        // Verificar permissões
         const botPermissions = welcomeChannel.permissionsFor(discordBot.user);
         if (!botPermissions.has(['SendMessages', 'ViewChannel'])) {
           console.log(`❌ Sem permissões no canal ${welcomeChannel.name}`);
@@ -958,7 +944,6 @@ discordBot.on("guildMemberAdd", async (member) => {
         console.log(`❌ Canal de boas-vindas não encontrado no servidor: ${member.guild.name}`);
         console.log(`📋 Tentando encontrar qualquer canal de texto...`);
         
-        // Tentar encontrar qualquer canal de texto onde o bot possa enviar mensagens
         const anyTextChannel = member.guild.channels.cache.find(channel => 
           channel.type === 0 && 
           channel.permissionsFor(discordBot.user).has(['SendMessages', 'ViewChannel'])
@@ -996,7 +981,6 @@ discordBot.on("guildMemberAdd", async (member) => {
         }
       }
 
-      // Canal de logs - busca flexível
       const logChannel = member.guild.channels.cache.find(channel =>
         channel.type === 0 && (
           channel.name.toLowerCase().includes("📥│・logs-gerais") ||
@@ -1032,7 +1016,7 @@ discordBot.on("guildMemberAdd", async (member) => {
     } catch (error) {
       console.error(`❌ Erro no evento guildMemberAdd no servidor ${member.guild.name}:`, error);
     }
-  }, 2000); // Aumentei para 2 segundos para garantir que tudo carregou
+  }, 2000);
 });
 
 // ============================================================
@@ -1041,8 +1025,6 @@ discordBot.on("guildMemberAdd", async (member) => {
 export async function assignCivilRole(member) {
   try {
     const guild = member.guild;
-    
-    // Busca flexível pelo cargo Civis
     const civilRole = guild.roles.cache.find(r => 
       r.name === "Civis" || 
       r.name.toLowerCase().includes("civil") ||
@@ -1054,7 +1036,6 @@ export async function assignCivilRole(member) {
       return false;
     }
 
-    // Verifica permissões do bot
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
       console.warn(`❌ Bot sem permissão para gerenciar cargos no servidor: ${guild.name}`);
       return false;
@@ -1083,7 +1064,6 @@ export async function assignVerifiedRole(member) {
   try {
     const guild = member.guild;
     
-    // Busca flexível pelo cargo verificado
     const verifiedRole = guild.roles.cache.find(r => 
       r.name === "Membro Verificado" || 
       r.name === "Verificado" ||
@@ -1096,7 +1076,6 @@ export async function assignVerifiedRole(member) {
       return false;
     }
 
-    // Verifica permissões do bot
     if (!guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
       console.warn(`❌ Bot sem permissão para gerenciar cargos no servidor: ${guild.name}`);
       return false;
@@ -1137,8 +1116,6 @@ export function getRobloxUsername(discordId) {
 export async function updateNicknameAndRole(member, shortTag, robloxUsername = null) {
   try {
     const isCivil = shortTag === "N/A" || !shortTag;
-    
-    // ✅ CORREÇÃO: Priorizar o username do Roblox quando disponível
     const actualRobloxUsername = robloxUsername || getRobloxUsername(member.id);
     
     console.log(`🔍 Debug updateNicknameAndRole:`, {
@@ -1152,12 +1129,9 @@ export async function updateNicknameAndRole(member, shortTag, robloxUsername = n
     let finalNickname;
     
     if (isCivil) {
-      // Se for civil, usar apenas o username do Discord
       const cleanNickname = member.user.username;
       finalNickname = cleanNickname.length > 32 ? cleanNickname.substring(0, 32) : cleanNickname;
     } else {
-      // ✅ CORREÇÃO CRÍTICA: SEMPRE usar o username do Roblox quando disponível
-      // Se não tiver username do Roblox, usar o Discord mas logar aviso
       const displayUsername = actualRobloxUsername || member.user.username;
       
       if (!actualRobloxUsername) {
@@ -1170,7 +1144,6 @@ export async function updateNicknameAndRole(member, shortTag, robloxUsername = n
 
     await member.setNickname(finalNickname);
 
-    // Remover roles antigas
     const roleNames = Object.keys(rankGroups);
     const rolesToRemove = member.roles.cache.filter((r) =>
       roleNames.includes(r.name)
@@ -1180,7 +1153,6 @@ export async function updateNicknameAndRole(member, shortTag, robloxUsername = n
       await member.roles.remove(rolesToRemove);
     }
 
-    // Adicionar nova role
     let newRoleName = "Civis";
     for (const [group, tags] of Object.entries(rankGroups)) {
       if (tags.includes(shortTag)) {
@@ -1239,15 +1211,12 @@ server.listen(PORT, () => {
   console.log(`🟢 Health check server running on port ${PORT}`);
 });
 
-// Tratamento de erros
 process.on('unhandledRejection', (error) => {
   console.error('❌ Unhandled Promise Rejection:', error);
 });
-
 process.on('uncaughtException', (error) => {
   console.error('❌ Uncaught Exception:', error);
 });
-
 process.on('SIGTERM', () => {
   console.log('🔄 Received SIGTERM, shutting down gracefully...');
   

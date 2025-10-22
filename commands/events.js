@@ -1,9 +1,7 @@
 import { PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { createMilitaryEmbed } from '../utils/embeds.js';
 
-// Armazenamento de eventos ativos
 export const activeEvents = new Map();
-
 export const commands = [
   {
     name: "evento",
@@ -89,7 +87,6 @@ async function handleEvento(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    // Validar e parsear a data
     const eventDate = parseCustomDate(dataInput);
     if (!eventDate || eventDate <= new Date()) {
       const errorEmbed = createMilitaryEmbed(
@@ -100,7 +97,6 @@ async function handleEvento(interaction, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // Verificar permissões no canal
     if (!canal.permissionsFor(client.user).has(['SendMessages', 'ViewChannel', 'EmbedLinks'])) {
       const errorEmbed = createMilitaryEmbed(
         "❌ PERMISSÕES INSUFICIENTES",
@@ -110,14 +106,10 @@ async function handleEvento(interaction, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // Criar ID único para o evento
     const eventId = generateEventId();
     
-    // Enviar mensagem inicial do evento
     const initialEmbed = createEventEmbed(nome, descricao, eventDate, cor, eventId, "initial");
     const eventMessage = await canal.send({ embeds: [initialEmbed] });
-
-    // Salvar informações do evento
     const eventInfo = {
       id: eventId,
       nome,
@@ -133,7 +125,6 @@ async function handleEvento(interaction, client) {
 
     activeEvents.set(eventId, eventInfo);
 
-    // Iniciar atualização em tempo real
     startEventCountdown(eventId, client);
 
     const successEmbed = createMilitaryEmbed(
@@ -204,15 +195,12 @@ async function handleCancelarEvento(interaction, client) {
   }
 
   try {
-    // Cancelar job do evento
     if (scheduledJobs[eventId]) {
       cancelJob(eventId);
     }
 
-    // Remover do mapa
     activeEvents.delete(eventId);
 
-    // Tentar atualizar a mensagem do evento
     try {
       const canal = await client.channels.fetch(event.canalId);
       if (canal) {
@@ -256,9 +244,7 @@ async function handleCancelarEvento(interaction, client) {
 // ============================================================
 // 🕐 SISTEMA DE CONTAGEM REGRESSIVA
 // ============================================================
-
 function startEventCountdown(eventId, client) {
-  // Atualizar a cada segundo
   const updateInterval = setInterval(async () => {
     const event = activeEvents.get(eventId);
     if (!event) {
@@ -269,14 +255,12 @@ function startEventCountdown(eventId, client) {
     const now = new Date();
     const timeLeft = event.eventDate - now;
 
-    // Se o evento acabou
     if (timeLeft <= 0) {
       clearInterval(updateInterval);
       await finalizeEvent(eventId, client);
       return;
     }
 
-    // Atualizar a mensagem
     try {
       const canal = await client.channels.fetch(event.canalId);
       const message = await canal.messages.fetch(event.messageId);
@@ -293,10 +277,9 @@ function startEventCountdown(eventId, client) {
       await message.edit({ embeds: [updatedEmbed] });
     } catch (error) {
       console.error(`Erro ao atualizar evento ${eventId}:`, error);
-      // Se não conseguir atualizar, para o intervalo
       clearInterval(updateInterval);
     }
-  }, 1000); // Atualizar a cada 1 segundo
+  }, 1000);
 }
 
 async function finalizeEvent(eventId, client) {
@@ -307,7 +290,6 @@ async function finalizeEvent(eventId, client) {
     const canal = await client.channels.fetch(event.canalId);
     const message = await canal.messages.fetch(event.messageId);
     
-    // Embed final explosiva!
     const finalEmbed = createEventEmbed(
       event.nome, 
       event.descricao, 
@@ -318,8 +300,6 @@ async function finalizeEvent(eventId, client) {
     );
 
     await message.edit({ embeds: [finalEmbed] });
-
-    // Enviar mensagem especial de comemoração
     const celebrationEmbed = createMilitaryEmbed(
       "🎉🎊🎆 EVENTO COMEÇOU! 🎆🎊🎉",
       `# **${event.nome.toUpperCase()} COMEÇOU!**\n\n` +
@@ -328,19 +308,18 @@ async function finalizeEvent(eventId, client) {
       `🎯 **Não perca tempo! Participe agora!**\n` +
       `⏰ **Iniciado em:** <t:${Math.floor(Date.now() / 1000)}:F>\n` +
       `👤 **Organizado por:** ${event.criador}`,
-      0xFFD700, // Dourado
+      0xFFD700,
       [],
       client.user.displayAvatarURL()
     );
 
-    celebrationEmbed.setImage('https://media.giphy.com/media/xT0xeuOy2Fcl9vDGiA/giphy.gif'); // GIF de fogos de artifício
+    celebrationEmbed.setImage('https://media.giphy.com/media/xT0xeuOy2Fcl9vDGiA/giphy.gif');
 
     await canal.send({ 
       content: `🎉 @here **O EVENTO ${event.nome.toUpperCase()} COMEÇOU!** 🎉`,
       embeds: [celebrationEmbed] 
     });
 
-    // Remover evento da lista ativa
     activeEvents.delete(eventId);
 
   } catch (error) {
@@ -351,7 +330,6 @@ async function finalizeEvent(eventId, client) {
 // ============================================================
 // 🎨 FUNÇÕES AUXILIARES
 // ============================================================
-
 function createEventEmbed(nome, descricao, eventDate, cor, eventId, status) {
   const now = new Date();
   const timeLeft = eventDate - now;
@@ -388,7 +366,7 @@ function createEventEmbed(nome, descricao, eventDate, cor, eventId, status) {
                    `📅 **Data programada:** ${formatDate(eventDate)}\n` +
                    `⏰ **Iniciado em:** <t:${Math.floor(now.getTime() / 1000)}:F>\n\n` +
                    `🚀 **PARTICIPE AGORA MESMO!** 🚀`;
-      color = 0xFFD700; // Dourado
+      color = 0xFFD700;
       footerText = `ID: ${eventId} • Evento finalizado em ${formatTime(now)}`;
       showCountdown = false;
       break;
@@ -399,7 +377,7 @@ function createEventEmbed(nome, descricao, eventDate, cor, eventId, status) {
                    `🚫 **Este evento foi cancelado.**\n` +
                    `📅 **Data original:** ${formatDate(eventDate)}\n` +
                    `⏰ **Cancelado em:** <t:${Math.floor(now.getTime() / 1000)}:F>`;
-      color = 0x95a5a6; // Cinza
+      color = 0x95a5a6;
       footerText = `ID: ${eventId} • Evento cancelado`;
       showCountdown = false;
       break;
@@ -412,7 +390,6 @@ function createEventEmbed(nome, descricao, eventDate, cor, eventId, status) {
     .setFooter({ text: footerText })
     .setTimestamp();
 
-  // Adicionar campo de contagem regressiva se necessário
   if (showCountdown && timeLeft > 0) {
     embed.addFields({
       name: "📊 DETALHES DA CONTAGEM",
@@ -428,15 +405,11 @@ function createEventEmbed(nome, descricao, eventDate, cor, eventId, status) {
 }
 
 function parseCustomDate(dateString) {
-  // Formato: DD/MM/AAAA HH:MM:SS
   const regex = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})$/;
   const match = dateString.match(regex);
-  
   if (!match) return null;
-  
   const [, day, month, year, hours, minutes, seconds] = match;
   const date = new Date(`${year}-${month}-${day}T${hours}:${minutes}:${seconds}`);
-  
   return date.toString() !== 'Invalid Date' ? date : null;
 }
 
@@ -474,12 +447,8 @@ function generateEventId() {
 // ============================================================
 // 🔄 INICIALIZAÇÃO DO SISTEMA
 // ============================================================
-
 export function initializeEventSystem(client) {
   console.log('🎯 Sistema de eventos inicializado!');
-  
-  // Limpar eventos antigos ao iniciar
   activeEvents.clear();
-  
   console.log(`✅ Sistema de eventos pronto! Comandos: ${commands.length}`);
 }

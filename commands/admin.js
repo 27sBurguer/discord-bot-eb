@@ -24,7 +24,7 @@ export const commands = [
         type: 7,
         description: "📢 Canal onde o anúncio será postado",
         required: false,
-        channel_types: [0, 5] // Text channel, News channel
+        channel_types: [0, 5]
       },
       {
         name: "mencionar",
@@ -130,7 +130,6 @@ async function handleAnunciar(interaction, client) {
 
     await interaction.editReply({ embeds: [successEmbed] });
 
-    // Log no canal de logs
     const logChannel = interaction.guild.channels.cache.find(
       c => c.name.toLowerCase() === "📥│・logs-gerais"
     );

@@ -1,4 +1,3 @@
-// firebase.js
 import { initializeApp } from 'firebase/app';
 import { 
   getFirestore, 
@@ -8,7 +7,7 @@ import {
   getDocs, 
   setDoc, 
   updateDoc, 
-  deleteDoc, // ← ADICIONE ESTE IMPORT
+  deleteDoc,
   query, 
   where, 
   orderBy, 
@@ -17,7 +16,6 @@ import {
   increment,
 } from 'firebase/firestore';
 
-// ✅ SUAS CREDENCIAIS DO FIREBASE - SUBSTITUA COM AS SUAS!
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
   authDomain: process.env.FIREBASE_AUTH_DOMAIN,
@@ -1103,6 +1101,477 @@ function getVideoPlatform(url) {
   if (url.includes('twitter.com') || url.includes('x.com')) return 'Twitter';
   if (url.includes('facebook.com') || url.includes('fb.watch')) return 'Facebook';
   return 'Outro';
+}
+
+// ============================================================
+// 💍 SISTEMA DE CASAMENTO
+// ============================================================
+
+// Função para verificar se usuário pode casar
+export async function canUserMarry(userId) {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) return { canMarry: false, reason: 'Usuário não encontrado' };
+    
+    const userData = userSnap.data();
+    const now = new Date();
+    
+    // Verificar se já está casado
+    if (userData.marriedTo) {
+      return { canMarry: false, reason: 'Você já está casado!' };
+    }
+    
+    // Verificar cooldown de divórcio (24 horas)
+    if (userData.lastDivorce) {
+      const lastDivorce = new Date(userData.lastDivorce.seconds * 1000);
+      const hoursSinceDivorce = (now - lastDivorce) / (1000 * 60 * 60);
+      
+      if (hoursSinceDivorce < 24) {
+        const hoursLeft = Math.ceil(24 - hoursSinceDivorce);
+        return { canMarry: false, reason: `Aguarde ${hoursLeft}h após o divórcio` };
+      }
+    }
+    
+    return { canMarry: true };
+  } catch (error) {
+    console.error('Erro ao verificar casamento:', error);
+    return { canMarry: false, reason: 'Erro interno' };
+  }
+}
+
+// Função para realizar casamento
+export async function performMarriage(userId1, userTag1, userId2, userTag2) {
+  try {
+    // Verificar se ambos podem casar
+    const canUser1Marry = await canUserMarry(userId1);
+    const canUser2Marry = await canUserMarry(userId2);
+    
+    if (!canUser1Marry.canMarry) {
+      return { success: false, reason: canUser1Marry.reason };
+    }
+    
+    if (!canUser2Marry.canMarry) {
+      return { success: false, reason: canUser2Marry.reason };
+    }
+    
+    // Verificar se não são a mesma pessoa
+    if (userId1 === userId2) {
+      return { success: false, reason: 'Você não pode casar consigo mesmo!' };
+    }
+    
+    // Criar registro de casamento
+    const marriageRef = collection(db, 'marriages');
+    const marriageDoc = await addDoc(marriageRef, {
+      user1: {
+        id: userId1,
+        tag: userTag1
+      },
+      user2: {
+        id: userId2,
+        tag: userTag2
+      },
+      marriedAt: new Date(),
+      status: 'active',
+      marriageId: generateMarriageId()
+    });
+    
+    // Atualizar usuários
+    const user1Ref = doc(db, 'users', userId1);
+    const user2Ref = doc(db, 'users', userId2);
+    
+    await updateDoc(user1Ref, {
+      marriedTo: userId2,
+      spouseTag: userTag2,
+      marriedSince: new Date(),
+      totalMarriages: (await getDoc(user1Ref)).data().totalMarriages || 0 + 1
+    });
+    
+    await updateDoc(user2Ref, {
+      marriedTo: userId1,
+      spouseTag: userTag1,
+      marriedSince: new Date(),
+      totalMarriages: (await getDoc(user2Ref)).data().totalMarriages || 0 + 1
+    });
+    
+    // Dar 100 Bellos para cada um
+    await updateUserCoins(userId1, 100);
+    await updateUserCoins(userId2, 100);
+    
+    console.log('✅ Casamento realizado:', marriageDoc.id);
+    return { 
+      success: true, 
+      marriageId: marriageDoc.id,
+      reward: 100
+    };
+    
+  } catch (error) {
+    console.error('Erro ao realizar casamento:', error);
+    return { success: false, reason: 'Erro interno' };
+  }
+}
+
+// Função para realizar divórcio
+export async function performDivorce(userId) {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists() || !userSnap.data().marriedTo) {
+      return { success: false, reason: 'Você não está casado!' };
+    }
+    
+    const userData = userSnap.data();
+    const spouseId = userData.marriedTo;
+    
+    // Buscar registro de casamento
+    const marriagesRef = collection(db, 'marriages');
+    const q = query(
+      marriagesRef, 
+      where('status', '==', 'active'),
+      where('user1.id', 'in', [userId, spouseId]),
+      where('user2.id', 'in', [userId, spouseId])
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      return { success: false, reason: 'Casamento não encontrado' };
+    }
+    
+    const marriageDoc = querySnapshot.docs[0];
+    const marriageData = marriageDoc.data();
+    
+    // Atualizar casamento para divorciado
+    await updateDoc(marriageDoc.ref, {
+      status: 'divorced',
+      divorcedAt: new Date(),
+      initiatedBy: userId
+    });
+    
+    // Atualizar usuários
+    const spouseRef = doc(db, 'users', spouseId);
+    
+    await updateDoc(userRef, {
+      marriedTo: null,
+      spouseTag: null,
+      marriedSince: null,
+      lastDivorce: new Date()
+    });
+    
+    await updateDoc(spouseRef, {
+      marriedTo: null,
+      spouseTag: null,
+      marriedSince: null,
+      lastDivorce: new Date()
+    });
+    
+    console.log('✅ Divórcio realizado para:', userId);
+    return { success: true };
+    
+  } catch (error) {
+    console.error('Erro ao realizar divórcio:', error);
+    return { success: false, reason: 'Erro interno' };
+  }
+}
+
+// Função para obher informações de casamento
+export async function getMarriageInfo(userId) {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists() || !userSnap.data().marriedTo) {
+      return { isMarried: false };
+    }
+    
+    const userData = userSnap.data();
+    const spouseId = userData.marriedTo;
+    
+    // Buscar informações do cônjuge
+    const spouseRef = doc(db, 'users', spouseId);
+    const spouseSnap = await getDoc(spouseRef);
+    const spouseData = spouseSnap.exists() ? spouseSnap.data() : null;
+    
+    // Buscar registro de casamento
+    const marriagesRef = collection(db, 'marriages');
+    const q = query(
+      marriagesRef, 
+      where('status', '==', 'active'),
+      where('user1.id', 'in', [userId, spouseId]),
+      where('user2.id', 'in', [userId, spouseId])
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const marriageData = querySnapshot.empty ? null : querySnapshot.docs[0].data();
+    
+    return {
+      isMarried: true,
+      spouse: {
+        id: spouseId,
+        tag: userData.spouseTag,
+        ...(spouseData && { 
+          coins: spouseData.coins,
+          joinedAt: spouseData.joinedAt 
+        })
+      },
+      marriedSince: userData.marriedSince,
+      marriageId: marriageData?.marriageId,
+      daysMarried: marriageData ? Math.floor((new Date() - new Date(marriageData.marriedAt.seconds * 1000)) / (1000 * 60 * 60 * 24)) : 0
+    };
+    
+  } catch (error) {
+    console.error('Erro ao buscar informações de casamento:', error);
+    return { isMarried: false };
+  }
+}
+
+// Função para ranking de casamentos
+export async function getMarriageRanking(limit = 10) {
+  try {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('marriedTo', '!=', null));
+    const querySnapshot = await getDocs(q);
+    
+    const marriedUsers = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.marriedSince) {
+        const marriedSince = new Date(data.marriedSince.seconds * 1000);
+        const daysMarried = Math.floor((new Date() - marriedSince) / (1000 * 60 * 60 * 24));
+        
+        marriedUsers.push({
+          userId: doc.id,
+          userTag: data.userTag,
+          spouseTag: data.spouseTag,
+          daysMarried: daysMarried,
+          marriedSince: data.marriedSince
+        });
+      }
+    });
+    
+    // Ordenar por tempo de casamento (mais tempo primeiro)
+    marriedUsers.sort((a, b) => b.daysMarried - a.daysMarried);
+    
+    return marriedUsers.slice(0, limit);
+    
+  } catch (error) {
+    console.error('Erro ao buscar ranking de casamentos:', error);
+    return [];
+  }
+}
+
+// Função auxiliar para gerar ID do casamento
+function generateMarriageId() {
+  return 'MAR' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5).toUpperCase();
+}
+
+// ============================================================
+// ⚙️ FUNÇÃO ADMIN: Remover cooldown de casamento
+// ============================================================
+
+export async function removeMarriageCooldown(userId) {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) {
+      return { success: false, reason: 'Usuário não encontrado' };
+    }
+
+    const userData = userSnap.data();
+    
+    // Remover o campo lastDivorce para eliminar o cooldown
+    await updateDoc(userRef, {
+      lastDivorce: null
+    });
+
+    console.log(`✅ Cooldown de casamento removido para usuário: ${userId}`);
+    return { success: true };
+
+  } catch (error) {
+    console.error('Erro ao remover cooldown:', error);
+    return { success: false, reason: 'Erro interno' };
+  }
+}
+
+// Função para verificar informações do usuário
+export async function getUserMarriageStatus(userId) {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) {
+      return { success: false, reason: 'Usuário não encontrado' };
+    }
+
+    const userData = userSnap.data();
+    
+    return {
+      success: true,
+      userTag: userData.userTag || 'N/A',
+      marriedTo: userData.marriedTo,
+      lastDivorce: userData.lastDivorce,
+      canMarry: !userData.marriedTo && (!userData.lastDivorce || (new Date() - new Date(userData.lastDivorce.seconds * 1000)) >= 24 * 60 * 60 * 1000),
+      cooldownActive: userData.lastDivorce && (new Date() - new Date(userData.lastDivorce.seconds * 1000)) < 24 * 60 * 60 * 1000
+    };
+
+  } catch (error) {
+    console.error('Erro ao buscar status:', error);
+    return { success: false, reason: 'Erro interno' };
+  }
+}
+
+// ============================================================
+// 🔍 FUNÇÕES DE DIAGNÓSTICO DE CASAMENTO
+// ============================================================
+
+// Função detalhada de diagnóstico
+export async function getDetailedMarriageDiagnosis(userId1, userId2) {
+  try {
+    const user1Ref = doc(db, 'users', userId1);
+    const user2Ref = doc(db, 'users', userId2);
+    
+    const [user1Snap, user2Snap] = await Promise.all([
+      getDoc(user1Ref),
+      getDoc(user2Ref)
+    ]);
+
+    const user1Data = user1Snap.exists() ? user1Snap.data() : null;
+    const user2Data = user2Snap.exists() ? user2Snap.data() : null;
+
+    if (!user1Data || !user2Data) {
+      return {
+        success: false,
+        reason: 'Um ou ambos os usuários não foram encontrados no banco de dados'
+      };
+    }
+
+    // Verificar casamentos ativos
+    const marriagesRef = collection(db, 'marriages');
+    const q1 = query(marriagesRef, where('status', '==', 'active'));
+    const marriagesSnapshot = await getDocs(q1);
+
+    let user1Marriage = null;
+    let user2Marriage = null;
+
+    marriagesSnapshot.forEach(doc => {
+      const marriage = doc.data();
+      if (marriage.user1.id === userId1 || marriage.user2.id === userId1) {
+        user1Marriage = marriage;
+      }
+      if (marriage.user1.id === userId2 || marriage.user2.id === userId2) {
+        user2Marriage = marriage;
+      }
+    });
+
+    // Calcular cooldowns
+    const now = new Date();
+    const user1Cooldown = user1Data.lastDivorce ? 
+      Math.max(0, 24 - Math.floor((now - new Date(user1Data.lastDivorce.seconds * 1000)) / (1000 * 60 * 60))) : 0;
+    
+    const user2Cooldown = user2Data.lastDivorce ? 
+      Math.max(0, 24 - Math.floor((now - new Date(user2Data.lastDivorce.seconds * 1000)) / (1000 * 60 * 60))) : 0;
+
+    return {
+      success: true,
+      user1: {
+        id: userId1,
+        tag: user1Data.userTag || 'N/A',
+        marriedTo: user1Data.marriedTo,
+        spouseTag: user1Data.spouseTag,
+        lastDivorce: user1Data.lastDivorce,
+        cooldownHoursLeft: user1Cooldown,
+        canMarry: !user1Data.marriedTo && user1Cooldown === 0,
+        marriage: user1Marriage
+      },
+      user2: {
+        id: userId2,
+        tag: user2Data.userTag || 'N/A',
+        marriedTo: user2Data.marriedTo,
+        spouseTag: user2Data.spouseTag,
+        lastDivorce: user2Data.lastDivorce,
+        cooldownHoursLeft: user2Cooldown,
+        canMarry: !user2Data.marriedTo && user2Cooldown === 0,
+        marriage: user2Marriage
+      },
+      canMarryEachOther: (
+        !user1Data.marriedTo && 
+        !user2Data.marriedTo && 
+        user1Cooldown === 0 && 
+        user2Cooldown === 0 &&
+        userId1 !== userId2
+      )
+    };
+
+  } catch (error) {
+    console.error('Erro no diagnóstico:', error);
+    return { success: false, reason: 'Erro interno no diagnóstico' };
+  }
+}
+
+// Função para forçar limpeza de casamento
+export async function forceClearMarriage(userId) {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) {
+      return { success: false, reason: 'Usuário não encontrado' };
+    }
+
+    const userData = userSnap.data();
+    
+    // Se estiver casado, encontrar e terminar o casamento
+    if (userData.marriedTo) {
+      const marriagesRef = collection(db, 'marriages');
+      const q = query(
+        marriagesRef, 
+        where('status', '==', 'active'),
+        where('user1.id', 'in', [userId, userData.marriedTo]),
+        where('user2.id', 'in', [userId, userData.marriedTo])
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const marriageDoc = querySnapshot.docs[0];
+        await updateDoc(marriageDoc.ref, {
+          status: 'admin_cleared',
+          clearedAt: new Date(),
+          clearedBy: 'system'
+        });
+      }
+
+      // Limpar também o cônjuge
+      const spouseRef = doc(db, 'users', userData.marriedTo);
+      const spouseSnap = await getDoc(spouseRef);
+      
+      if (spouseSnap.exists()) {
+        await updateDoc(spouseRef, {
+          marriedTo: null,
+          spouseTag: null,
+          marriedSince: null
+        });
+      }
+    }
+
+    // Limpar dados do usuário
+    await updateDoc(userRef, {
+      marriedTo: null,
+      spouseTag: null,
+      marriedSince: null,
+      lastDivorce: null
+    });
+
+    return { success: true };
+
+  } catch (error) {
+    console.error('Erro ao forçar limpeza:', error);
+    return { success: false, reason: 'Erro interno' };
+  }
 }
 
 export default db;

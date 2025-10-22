@@ -1,16 +1,15 @@
 import { EmbedBuilder } from "discord.js";
 
-// 🎨 Cores para os Embeds
 export const embedColors = {
-  SUCCESS: 0x2ecc71,    // Verde
-  ERROR: 0xe74c3c,      // Vermelho
-  WARNING: 0xf39c12,    // Laranja
-  INFO: 0x3498db,       // Azul
-  MILITARY: 0x2c3e50,   // Azul militar
-  PROMOTION: 0x9b59b6,  // Roxo para promoções
-  WELCOME: 0x1abc9c,    // Verde água para boas-vindas
-  VERIFIED: 0x00ff00,   // Verde para verificação
-  ANNOUNCEMENT: 0xf39c12 // Laranja para anúncios
+  SUCCESS: 0x2ecc71,    
+  ERROR: 0xe74c3c,      
+  WARNING: 0xf39c12,    
+  INFO: 0x3498db,       
+  MILITARY: 0x2c3e50,   
+  PROMOTION: 0x9b59b6,  
+  WELCOME: 0x1abc9c,    
+  VERIFIED: 0x00ff00,   
+  ANNOUNCEMENT: 0xf39c12 
 };
 
 /**
@@ -44,37 +43,22 @@ export function createMilitaryEmbed(title, description, color = embedColors.MILI
   return embed;
 }
 
-/**
- * ✅ Embed de sucesso padronizado
- */
 export function createSuccessEmbed(title, description, fields = []) {
   return createMilitaryEmbed(title, description, embedColors.SUCCESS, fields);
 }
 
-/**
- * ❌ Embed de erro padronizado
- */
 export function createErrorEmbed(title, description, fields = []) {
   return createMilitaryEmbed(title, description, embedColors.ERROR, fields);
 }
 
-/**
- * ⚠️ Embed de aviso padronizado
- */
 export function createWarningEmbed(title, description, fields = []) {
   return createMilitaryEmbed(title, description, embedColors.WARNING, fields);
 }
 
-/**
- * ℹ️ Embed de informação padronizado
- */
 export function createInfoEmbed(title, description, fields = []) {
   return createMilitaryEmbed(title, description, embedColors.INFO, fields);
 }
 
-/**
- * 🎉 Embed de boas-vindas padronizado
- */
 export function createWelcomeEmbed(member, description = null) {
   const defaultDescription = `**Bem-vindo às Forças Armadas, ${member.user}!**\n\n` +
     `📍 **Identificação:** ${member.user.tag}\n` +
@@ -94,9 +78,6 @@ export function createWelcomeEmbed(member, description = null) {
   );
 }
 
-/**
- * 📊 Embed de status do bot
- */
 export function createStatusEmbed(client, stats) {
   return createMilitaryEmbed(
     "🟢 STATUS DO SISTEMA",

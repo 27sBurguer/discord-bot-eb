@@ -1,11 +1,4 @@
 import { ActivityType } from 'discord.js';
-
-/**
- * 🎮 Gerenciador de Status e Atividades Rotativas
- * Sistema para mudar automaticamente o status do bot
- */
-
-// 📝 Lista de status aleatórios
 export const statusList = [
   {
     name: 'Sistema Militar | /ajuda',
@@ -60,7 +53,6 @@ export const statusList = [
   }
 ];
 
-// 🎯 Lista de descrições aleatórias para o perfil do bot
 export const profileDescriptions = [
   "🎖️ Bot oficial do sistema militar",
   "🔗 Integração Roblox-Discord",
@@ -74,33 +66,19 @@ export const profileDescriptions = [
   "🎯 Precisão e eficiência"
 ];
 
-/**
- * 🎲 Seleciona um status aleatório da lista
- * @returns {Object} Status aleatório
- */
 export function getRandomStatus() {
   const randomIndex = Math.floor(Math.random() * statusList.length);
   return statusList[randomIndex];
 }
 
-/**
- * 🎲 Seleciona uma descrição aleatória
- * @returns {string} Descrição aleatória
- */
 export function getRandomDescription() {
   const randomIndex = Math.floor(Math.random() * profileDescriptions.length);
   return profileDescriptions[randomIndex];
 }
 
-/**
- * ⚙️ Configura o status rotativo do bot
- * @param {Client} client - Cliente do Discord.js
- * @param {number} interval - Intervalo em milissegundos (padrão: 2 minutos)
- */
 export function setupRotatingStatus(client, interval = 2 * 60 * 1000) {
   console.log('🔄 Iniciando sistema de status rotativo...');
   
-  // Função para atualizar o status
   const updateStatus = () => {
     try {
       const randomStatus = getRandomStatus();
@@ -122,10 +100,7 @@ export function setupRotatingStatus(client, interval = 2 * 60 * 1000) {
     }
   };
   
-  // Atualizar imediatamente ao iniciar
   updateStatus();
-  
-  // Configurar intervalo para rotacionar
   const statusInterval = setInterval(updateStatus, interval);
   
   console.log(`✅ Status rotativo configurado (${interval / 60000} minutos)`);
@@ -133,10 +108,6 @@ export function setupRotatingStatus(client, interval = 2 * 60 * 1000) {
   return statusInterval;
 }
 
-/**
- * 🔄 Alterna entre diferentes tipos de status
- * @param {Client} client - Cliente do Discord.js
- */
 export function cycleStatusTypes(client) {
   const statusTypes = [
     {
@@ -182,14 +153,9 @@ export function cycleStatusTypes(client) {
     } catch (error) {
       console.error('❌ Erro no status cíclico:', error);
     }
-  }, 3 * 60 * 1000); // Muda a cada 3 minutos
+  }, 3 * 60 * 1000);
 }
 
-/**
- * 📊 Obtém o nome legível do tipo de atividade
- * @param {ActivityType} type - Tipo de atividade
- * @returns {string} Nome legível
- */
 function getActivityTypeName(type) {
   const typeNames = {
     [ActivityType.Playing]: 'Jogando',
@@ -203,10 +169,6 @@ function getActivityTypeName(type) {
   return typeNames[type] || 'Desconhecido';
 }
 
-/**
- * 🎭 Sistema de status temáticos por horário
- * @param {Client} client - Cliente do Discord.js
- */
 export function setupThemedStatus(client) {
   const updateThemedStatus = () => {
     const now = new Date();
@@ -215,26 +177,22 @@ export function setupThemedStatus(client) {
     let themedStatus;
     
     if (hour >= 6 && hour < 12) {
-      // Manhã
       themedStatus = {
         name: '☀️ Treinamento Matinal',
         type: ActivityType.Playing
       };
     } else if (hour >= 12 && hour < 18) {
-      // Tarde
       themedStatus = {
         name: '🎖️ Operações Diárias',
         type: ActivityType.Watching
       };
     } else if (hour >= 18 && hour < 22) {
-      // Noite
       themedStatus = {
         name: '🌙 Patrulha Noturna',
         type: ActivityType.Streaming,
         url: 'https://www.twitch.tv/directory/game/Roblox'
       };
     } else {
-      // Madrugada
       themedStatus = {
         name: '🌜 Vigília Noturna',
         type: ActivityType.Watching
@@ -257,28 +215,20 @@ export function setupThemedStatus(client) {
     }
   };
   
-  // Atualizar imediatamente
   updateThemedStatus();
-  
-  // Atualizar a cada hora
   const themedInterval = setInterval(updateThemedStatus, 60 * 60 * 1000);
   
   console.log('✅ Status temático configurado (atualiza a cada hora)');
   return themedInterval;
 }
 
-/**
- * 🎪 Sistema de status especial para eventos/datas comemorativas
- * @param {Client} client - Cliente do Discord.js
- */
 export function setupSpecialEventsStatus(client) {
   const now = new Date();
-  const month = now.getMonth() + 1; // 1-12
+  const month = now.getMonth() + 1;
   const day = now.getDate();
   
   let specialStatus = null;
   
-  // Verificar datas especiais
   if (month === 1 && day === 1) {
     specialStatus = { name: '🎉 Feliz Ano Novo!', type: ActivityType.Celebrating };
   } else if (month === 9 && day === 7) {

@@ -1,4 +1,3 @@
-// economy.js
 import { PermissionFlagsBits } from "discord.js";
 import { createMilitaryEmbed } from '../utils/embeds.js';
 import { getUser, updateUserCoins, getLeaderboard } from '../firebase.js';
@@ -10,7 +9,7 @@ export const commands = [
     options: [
       {
         name: "usuario",
-        type: 6, // USER
+        type: 6,
         description: "👤 Usuário para ver moedas",
         required: false
       }
@@ -20,6 +19,27 @@ export const commands = [
     name: "leaderboard",
     description: "🏆 Mostra o ranking de moedas"
   },
+  {
+    name: "transferir",
+    description: "🔄 Transferir moedas para outro usuário",
+    options: [
+      {
+        name: "usuario",
+        type: 6,
+        description: "👤 Usuário que receberá as moedas",
+        required: true
+      },
+      {
+        name: "quantidade",
+        type: 4,
+        description: "🔢 Quantidade de moedas para transferir",
+        required: true,
+        min_value: 1
+      }
+    ]
+  }
+  // Apenas Administrador
+  /*
   {
     name: "darmoedas",
     description: "🎁 Dar moedas para um usuário (Apenas Administradores)",
@@ -60,25 +80,7 @@ export const commands = [
       }
     ]
   },
-  {
-    name: "transferir",
-    description: "🔄 Transferir moedas para outro usuário",
-    options: [
-      {
-        name: "usuario",
-        type: 6,
-        description: "👤 Usuário que receberá as moedas",
-        required: true
-      },
-      {
-        name: "quantidade",
-        type: 4,
-        description: "🔢 Quantidade de moedas para transferir",
-        required: true,
-        min_value: 1
-      }
-    ]
-  }
+  */
 ];
 
 export async function execute(interaction, client) {

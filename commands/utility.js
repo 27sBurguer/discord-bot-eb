@@ -1,6 +1,5 @@
 import { PermissionFlagsBits } from "discord.js";
 import { createMilitaryEmbed } from '../utils/embeds.js';
-// ✅ NOVO IMPORT
 import { statusList, profileDescriptions } from '../utils/statusManager.js';
 
 export const commands = [
@@ -12,7 +11,6 @@ export const commands = [
     name: "status",
     description: "🟢 Verifica o status do bot e informações do servidor"
   },
-  // ✅ NOVO COMANDO
   {
     name: "botinfo",
     description: "🤖 Mostra informações detalhadas sobre o bot"
@@ -69,7 +67,6 @@ export const commands = [
       }
     ]
   },
-  // ✅ NOVOS COMANDOS PARA COMUNIDADE
   {
     name: "serverinfo",
     description: "🌐 Mostra informações detalhadas sobre o servidor"
@@ -122,7 +119,6 @@ export const commands = [
       }
     ]
   },
-  // ✅ NOVOS COMANDOS PARA MODERAÇÃO
   {
     name: "limpar",
     description: "🧹 Limpa mensagens de um canal",
@@ -245,7 +241,6 @@ export async function execute(interaction, client) {
   }
 }
 
-// ✅ FUNÇÃO AJUDA CORRIGIDA
 async function handleAjuda(interaction, client) {
   const ajudaEmbed = createMilitaryEmbed(
     "📋 CENTRAL DE AJUDA - COMANDOS DISPONÍVEIS",
@@ -253,19 +248,16 @@ async function handleAjuda(interaction, client) {
     0x0099ff
   );
 
-  // Comandos Militares
   const militaryCommands = client.commands.filter(cmd => cmd.category === 'military');
   const militaryList = Array.from(militaryCommands.values()).map(cmd => 
     `• \`/${cmd.data.name}\` - ${cmd.data.description}`
   ).join('\n');
 
-  // Comandos Utilitários
   const utilityCommands = client.commands.filter(cmd => cmd.category === 'utility');
   const utilityList = Array.from(utilityCommands.values()).map(cmd => 
     `• \`/${cmd.data.name}\` - ${cmd.data.description}`
   ).join('\n');
 
-  // Comandos Administrativos
   const adminCommands = client.commands.filter(cmd => cmd.category === 'admin');
   const adminList = Array.from(adminCommands.values()).map(cmd => 
     `• \`/${cmd.data.name}\` - ${cmd.data.description}`
@@ -302,12 +294,10 @@ async function handleAjuda(interaction, client) {
   await interaction.reply({ embeds: [ajudaEmbed], ephemeral: false });
 }
 
-// ✅ FUNÇÃO FALAR CORRIGIDA
 async function handleFalar(interaction, client) {
   const mensagem = interaction.options.getString("mensagem");
   const canal = interaction.options.getChannel("canal") || interaction.channel;
 
-  // Verificar permissões no canal de destino
   if (!canal.permissionsFor(client.user).has(['SendMessages', 'ViewChannel'])) {
     const errorEmbed = createMilitaryEmbed(
       "ERRO DE PERMISSÃO",
@@ -344,7 +334,6 @@ async function handleEmbed(interaction, client) {
   const cor = interaction.options.getString("cor") || "0099ff";
   const canal = interaction.options.getChannel("canal") || interaction.channel;
 
-  // Validar cor hexadecimal
   const hexColor = cor.startsWith('#') ? cor.slice(1) : cor;
   const isValidColor = /^[0-9A-F]{6}$/i.test(hexColor);
 
@@ -357,7 +346,6 @@ async function handleEmbed(interaction, client) {
     return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
   }
 
-  // Verificar permissões
   if (!canal.permissionsFor(client.user).has(['SendMessages', 'ViewChannel'])) {
     const errorEmbed = createMilitaryEmbed(
       "ERRO DE PERMISSÃO",
@@ -397,7 +385,6 @@ async function handleStatus(interaction, client) {
   const minutes = Math.floor(uptime / 60) % 60;
   const seconds = Math.floor(uptime % 60);
 
-  // ✅ STATUS ATUAL DO BOT
   const currentActivity = client.user.presence.activities[0];
   const statusText = currentActivity 
     ? `${currentActivity.type === 4 ? '' : '🎮 '}${currentActivity.name}`
@@ -466,7 +453,6 @@ async function handleStatus(interaction, client) {
   await interaction.reply({ embeds: [statusEmbed], ephemeral: true });
 }
 
-// ✅ NOVA FUNÇÃO: Informações detalhadas do bot
 async function handleBotInfo(interaction, client) {
   const botInfoEmbed = createMilitaryEmbed(
     "🤖 INFORMAÇÕES DO BOT MILITAR",
@@ -474,7 +460,6 @@ async function handleBotInfo(interaction, client) {
     0x3498db
   );
 
-  // Informações de desenvolvimento
   const devInfo = {
     name: "👨‍💻 DESENVOLVIMENTO",
     value: 
@@ -485,7 +470,6 @@ async function handleBotInfo(interaction, client) {
     inline: true
   };
 
-  // Sistema de status
   const statusInfo = {
     name: "🎮 SISTEMA DE STATUS",
     value: 
@@ -496,7 +480,6 @@ async function handleBotInfo(interaction, client) {
     inline: true
   };
 
-  // Comandos por categoria
   const militaryCommandsCount = client.commands.filter(cmd => cmd.category === 'military').size;
   const utilityCommandsCount = client.commands.filter(cmd => cmd.category === 'utility').size;
   const adminCommandsCount = client.commands.filter(cmd => cmd.category === 'admin').size;
@@ -511,7 +494,6 @@ async function handleBotInfo(interaction, client) {
     inline: true
   };
 
-  // Estatísticas em tempo real
   const statsInfo = {
     name: "📊 ESTATÍSTICAS",
     value: 
@@ -521,7 +503,6 @@ async function handleBotInfo(interaction, client) {
     inline: true
   };
 
-  // Recursos do sistema
   const featuresInfo = {
     name: "⚡ RECURSOS",
     value: 
@@ -550,7 +531,6 @@ async function handleBotInfo(interaction, client) {
   await interaction.reply({ embeds: [botInfoEmbed], ephemeral: true });
 }
 
-// ✅ NOVAS FUNÇÕES PARA COMUNIDADE
 async function handleServerInfo(interaction, client) {
   const guild = interaction.guild;
   
@@ -647,7 +627,6 @@ async function handleUserInfo(interaction, client) {
   );
 
   userInfoEmbed.setThumbnail(user.displayAvatarURL({ size: 256 }));
-  
   await interaction.reply({ embeds: [userInfoEmbed], ephemeral: false });
 }
 
@@ -668,7 +647,6 @@ async function handleAvatar(interaction, client) {
 async function handleCalc(interaction, client) {
   const expressao = interaction.options.getString("expressao");
   
-  // Validar expressão para segurança
   const validChars = /^[0-9+\-*/().\s]+$/;
   if (!validChars.test(expressao)) {
     const errorEmbed = createMilitaryEmbed(
@@ -680,7 +658,6 @@ async function handleCalc(interaction, client) {
   }
 
   try {
-    // Avaliar expressão de forma segura
     const resultado = eval(expressao);
     
     if (typeof resultado !== 'number' || !isFinite(resultado)) {
@@ -706,8 +683,6 @@ async function handleCalc(interaction, client) {
 
 async function handleEmoji(interaction, client) {
   const emojiInput = interaction.options.getString("emoji");
-  
-  // Extrair ID do emoji se for custom
   const customEmojiMatch = emojiInput.match(/<a?:(\w+):(\d+)>/);
   
   if (customEmojiMatch) {
@@ -724,7 +699,6 @@ async function handleEmoji(interaction, client) {
     
     await interaction.reply({ embeds: [emojiEmbed], ephemeral: false });
   } else {
-    // Emoji padrão
     const emojiEmbed = createMilitaryEmbed(
       "😊 EMOJI PADRÃO",
       `**Emoji:** ${emojiInput}\n\nEste é um emoji padrão do Unicode.`,
@@ -735,7 +709,6 @@ async function handleEmoji(interaction, client) {
   }
 }
 
-// ✅ NOVAS FUNÇÕES PARA MODERAÇÃO
 async function handleLimpar(interaction, client) {
   const quantidade = interaction.options.getInteger("quantidade");
   const usuario = interaction.options.getUser("usuario");

@@ -1,4 +1,3 @@
-// catalog.js
 import { 
   ActionRowBuilder, 
   ButtonBuilder, 
@@ -14,150 +13,9 @@ import { createMilitaryEmbed } from "../utils/embeds.js";
 import { getCatalogItems, getItem, createPurchase, getUser } from "../firebase.js";
 
 export const commands = [
-  {
-    name: "catalogo",
-    description: "🛍️ Abre o catálogo de itens do Bellinho"
-  },
-  {
-    name: "additem",
-    description: "➕ Adicionar item ao catálogo (Admin)",
-    default_member_permissions: "8",
-    options: [
-      {
-        name: "nome",
-        type: 3,
-        description: "📝 Nome do item",
-        required: true
-      },
-      {
-        name: "descricao",
-        type: 3,
-        description: "📄 Descrição do item",
-        required: true
-      },
-      {
-        name: "preco_moedas",
-        type: 4,
-        description: "💰 Preço em Bellos",
-        required: true,
-        min_value: 1
-      },
-      {
-        name: "preco_pix",
-        type: 10,
-        description: "💵 Preço em PIX",
-        required: true,
-        min_value: 0.01
-      },
-      {
-        name: "categoria",
-        type: 3,
-        description: "📦 Categoria do item",
-        required: true,
-        choices: [
-          { name: "💵 Dinheiro no Jogo", value: "dinheiro" },
-          { name: "⭐ VIP", value: "vip" },
-          { name: "🎖️ Cargos", value: "cargos" },
-          { name: "🎁 Pacotes", value: "pacotes" },
-          { name: "📦 Outros", value: "outros" },
-          { name: "💫 Gamepass", value: "passes"}
-        ]
-      },
-      {
-        name: "emoji",
-        type: 3,
-        description: "😊 Emoji do item (opcional)",
-        required: false
-      },
-      {
-        name: "cupom_nome",
-        type: 3,
-        description: "🎫 Nome do cupom de desconto (opcional)",
-        required: false
-      },
-      {
-        name: "cupom_descricao",
-        type: 3,
-        description: "📝 Descrição do cupom (opcional)",
-        required: false
-      },
-      {
-        name: "cupom_desconto",
-        type: 10, // NUMBER
-        description: "💰 Percentual de desconto (0.1 = 10%)",
-        required: false,
-        min_value: 0.01,
-        max_value: 0.99
-      }
-    ]
-  },
-  {
-    name: "edititem",
-    description: "✏️ Editar item do catálogo (Admin)",
-    default_member_permissions: "8", // "8" é o valor numérico para Administrator
-    options: [
-      {
-        name: "item_id",
-        type: 3,
-        description: "🆔 ID do item para editar",
-        required: true
-      },
-      {
-        name: "campo",
-        type: 3,
-        description: "📝 Campo para editar",
-        required: true,
-        choices: [
-          { name: "Nome", value: "name" },
-          { name: "Descrição", value: "description" },
-          { name: "Preço em Bellos", value: "coinPrice" },
-          { name: "Preço em PIX", value: "pixPrice" },
-          { name: "Disponibilidade", value: "available" }
-        ]
-      },
-      {
-        name: "valor",
-        type: 3,
-        description: "🎯 Novo valor",
-        required: true
-      }
-    ]
-  },
-  {
-    name: "removeitem",
-    description: "🗑️ Remover item do catálogo (Admin)",
-    default_member_permissions: "8",
-    options: [
-      {
-        name: "item_id",
-        type: 3,
-        description: "🆔 ID do item para remover",
-        required: true
-      },
-      {
-        name: "confirmacao",
-        type: 3,
-        description: "❌ Digite 'CONFIRMAR' para remover o item",
-        required: true,
-        choices: [
-          { name: "✅ CONFIRMAR REMOÇÃO", value: "CONFIRMAR" }
-        ]
-      }
-    ]
-  },
-  {
-    name: "iditem",
-    description: "🔍 Buscar informações de um item pelo nome",
-    default_member_permissions: "8", // Apenas admin pode usar
-    options: [
-        {
-        name: "nome_item",
-        type: 3,
-        description: "🛍️ Nome do item para buscar",
-        required: true,
-        autocomplete: true
-        }
-    ]
+    {
+      name: "catalogo",
+      description: "🛍️ Abre o catálogo de itens do Bellinho"
     },
     {
       name: "diario",
@@ -190,7 +48,220 @@ export const commands = [
     {
       name: "regras-videos",
       description: "📋 Ver regras do canal de vídeos"
+    },
+    {
+      name: "casar",
+      description: "💍 Casar com outro usuário",
+      options: [
+        {
+          name: "usuario",
+          type: 6,
+          description: "👰‍♂️ Usuário com quem deseja casar",
+          required: true
+        }
+      ]
+    },
+    {
+      name: "divorciar",
+      description: "💔 Divorciar-se do seu cônjuge"
+    },
+    {
+      name: "casamento",
+      description: "💑 Ver informações do seu casamento"
+    },
+    {
+      name: "ranking-casamento",
+      description: "🏆 Ranking dos casamentos mais longos"
+    },
+    // Apenas admin
+    /*
+    {
+      name: "iditem",
+      description: "🔍 Buscar informações de um item pelo nome",
+      default_member_permissions: "8",
+      options: [
+          {
+          name: "nome_item",
+          type: 3,
+          description: "🛍️ Nome do item para buscar",
+          required: true,
+          autocomplete: true
+          }
+      ]
+    },
+    {
+      name: "admin-remover-cooldown",
+      description: "⚙️ Remover cooldown de casamento (ADMIN)",
+      options: [
+        {
+          name: "usuario",
+          type: 6, // USER
+          description: "👤 Usuário para remover cooldown",
+          required: true
+        }
+      ]
+    },
+    {
+      name: "admin-diagnostico-casamento",
+      description: "🔍 Diagnóstico de problemas de casamento (ADMIN)",
+      options: [
+        {
+          name: "usuario1",
+          type: 6, // USER
+          description: "👤 Primeiro usuário para diagnóstico",
+          required: true
+        },
+        {
+          name: "usuario2",
+          type: 6, // USER
+          description: "👤 Segundo usuário para diagnóstico",
+          required: true
+        }
+      ]
+    },
+    {
+      name: "additem",
+      description: "➕ Adicionar item ao catálogo (Admin)",
+      default_member_permissions: "8",
+      options: [
+        {
+          name: "nome",
+          type: 3,
+          description: "📝 Nome do item",
+          required: true
+        },
+        {
+          name: "descricao",
+          type: 3,
+          description: "📄 Descrição do item",
+          required: true
+        },
+        {
+          name: "preco_moedas",
+          type: 4,
+          description: "💰 Preço em Bellos",
+          required: true,
+          min_value: 1
+        },
+        {
+          name: "preco_pix",
+          type: 10,
+          description: "💵 Preço em PIX",
+          required: true,
+          min_value: 0.01
+        },
+        {
+          name: "categoria",
+          type: 3,
+          description: "📦 Categoria do item",
+          required: true,
+          choices: [
+            { name: "💵 Dinheiro no Jogo", value: "dinheiro" },
+            { name: "⭐ VIP", value: "vip" },
+            { name: "🎖️ Cargos", value: "cargos" },
+            { name: "🎁 Pacotes", value: "pacotes" },
+            { name: "📦 Outros", value: "outros" },
+            { name: "💫 Gamepass", value: "passes"}
+          ]
+        },
+        {
+          name: "emoji",
+          type: 3,
+          description: "😊 Emoji do item (opcional)",
+          required: false
+        },
+        {
+          name: "cupom_nome",
+          type: 3,
+          description: "🎫 Nome do cupom de desconto (opcional)",
+          required: false
+        },
+        {
+          name: "cupom_descricao",
+          type: 3,
+          description: "📝 Descrição do cupom (opcional)",
+          required: false
+        },
+        {
+          name: "cupom_desconto",
+          type: 10,
+          description: "💰 Percentual de desconto (0.1 = 10%)",
+          required: false,
+          min_value: 0.01,
+          max_value: 0.99
+        }
+      ]
+    },
+    {
+      name: "edititem",
+      description: "✏️ Editar item do catálogo (Admin)",
+      default_member_permissions: "8",
+      options: [
+        {
+          name: "item_id",
+          type: 3,
+          description: "🆔 ID do item para editar",
+          required: true
+        },
+        {
+          name: "campo",
+          type: 3,
+          description: "📝 Campo para editar",
+          required: true,
+          choices: [
+            { name: "Nome", value: "name" },
+            { name: "Descrição", value: "description" },
+            { name: "Preço em Bellos", value: "coinPrice" },
+            { name: "Preço em PIX", value: "pixPrice" },
+            { name: "Disponibilidade", value: "available" }
+          ]
+        },
+        {
+          name: "valor",
+          type: 3,
+          description: "🎯 Novo valor",
+          required: true
+        }
+      ]
+    },
+    {
+      name: "removeitem",
+      description: "🗑️ Remover item do catálogo (Admin)",
+      default_member_permissions: "8",
+      options: [
+        {
+          name: "item_id",
+          type: 3,
+          description: "🆔 ID do item para remover",
+          required: true
+        },
+        {
+          name: "confirmacao",
+          type: 3,
+          description: "❌ Digite 'CONFIRMAR' para remover o item",
+          required: true,
+          choices: [
+            { name: "✅ CONFIRMAR REMOÇÃO", value: "CONFIRMAR" }
+          ]
+        }
+      ]
+    },
+    {
+      name: "sair-todos-servidores",
+      description: "🚪 Faz o bot sair de todos os servidores (Desenvolvedor)",
+      options: [
+        {
+          name: "confirmacao",
+          type: 3, // STRING
+          description: "⚠️ Digite 'CONFIRMAR SAIDA TOTAL' para executar",
+          required: true,
+          choices: [
+            { name: "✅ CONFIRMAR SAIDA TOTAL", value: "CONFIRMAR SAIDA TOTAL" }
+          ]
+        }
+      ]
     }
+    */
 ];
 
 export async function execute(interaction, client) {
@@ -236,13 +307,1210 @@ export async function execute(interaction, client) {
     case "regras-videos":
       await handleRegrasVideos(interaction, client);
       break;
+    case "casar":
+      await handleCasar(interaction, client);
+      break;
+    case "divorciar":
+      await handleDivorciar(interaction, client);
+      break;
+    case "casamento":
+      await handleCasamento(interaction, client);
+      break;
+    case "ranking-casamento":
+      await handleRankingCasamento(interaction, client);
+      break;
+    case "admin-remover-cooldown":
+      await handleAdminRemoverCooldown(interaction, client);
+      break;
+    case "admin-diagnostico-casamento":
+      await handleAdminDiagnosticoCasamento(interaction, client);
+      break;
+    case "sair-todos-servidores":
+      await handleSairTodosServidores(interaction, client);
+      break;
+  }
+}
+
+// ============================================================
+// 🚪 COMANDO: /sair-todos-servidores (DESENVOLVEDOR) - CORRIGIDO
+// ============================================================
+async function handleSairTodosServidores(interaction, client) {
+  const DEVELOPER_ID = '1134320234388525086';
+  
+  if (interaction.user.id !== DEVELOPER_ID) {
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ACESSO NEGADO",
+      "**Apenas o desenvolvedor pode usar este comando!**",
+      0xE74C3C
+    );
+    return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+  }
+
+  const confirmacao = interaction.options.getString("confirmacao");
+
+  if (confirmacao !== "CONFIRMAR SAIDA TOTAL") {
+    const errorEmbed = createMilitaryEmbed(
+      "❌ CONFIRMAÇÃO NECESSÁRIA",
+      "**Você deve digitar exatamente 'CONFIRMAR SAIDA TOTAL'!**\n\nEsta ação fará o bot sair de TODOS os servidores.",
+      0xE74C3C
+    );
+    return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+  }
+
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    const guilds = client.guilds.cache;
+    let successCount = 0;
+    let errorCount = 0;
+    let results = [];
+
+    const safeUpdateMessage = async (embed) => {
+      try {
+        await interaction.editReply({ embeds: [embed] });
+        return true;
+      } catch (updateError) {
+        console.log('⚠️ Não foi possível atualizar a mensagem (interação expirada):', updateError.message);
+        return false;
+      }
+    };
+
+    const initialEmbed = createMilitaryEmbed(
+      "🚪 INICIANDO SAÍDA DE SERVIDORES",
+      `**Iniciando processo de saída de ${guilds.size} servidores...**\n\n` +
+      `⏰ **Isso pode levar alguns minutos...**\n` +
+      `📊 **Progresso:** 0/${guilds.size}\n` +
+      `✅ **Sucesso:** 0\n` +
+      `❌ **Erros:** 0\n\n` +
+      `💡 **Acompanhe o progresso pelo console/logs**`,
+      0xF39C12
+    );
+
+    await safeUpdateMessage(initialEmbed);
+    console.log(`🚪 INICIANDO: Saindo de ${guilds.size} servidores...`);
+
+    for (const [index, guild] of guilds.entries()) {
+      try {
+        console.log(`🔄 Processando ${index + 1}/${guilds.size}: ${guild.name} (${guild.id})`);
+        
+        await guild.leave();
+        successCount++;
+        
+        const resultMsg = `✅ **${guild.name}** (${guild.id}) - SAIU COM SUCESSO`;
+        results.push(resultMsg);
+        console.log(resultMsg);
+        
+        if ((index + 1) % 10 === 0 || index === guilds.size - 1) {
+          const progressEmbed = createMilitaryEmbed(
+            "🚪 SAINDO DE SERVIDORES...",
+            `**Progresso do processo de saída:**\n\n` +
+            `📊 **Andamento:** ${index + 1}/${guilds.size}\n` +
+            `✅ **Sucesso:** ${successCount}\n` +
+            `❌ **Erros:** ${errorCount}\n` +
+            `⏰ **Última atualização:** <t:${Math.floor(Date.now() / 1000)}:T>\n\n` +
+            `💡 **Acompanhe detalhes pelo console**`,
+            0xF39C12
+          );
+          
+          await safeUpdateMessage(progressEmbed);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+      } catch (error) {
+        errorCount++;
+        const errorMsg = `❌ **${guild.name}** (${guild.id}) - ERRO: ${error.message}`;
+        results.push(errorMsg);
+        console.error(errorMsg);
+      }
+    }
+
+    console.log(`✅ PROCESSO CONCLUÍDO: ${successCount} sucessos, ${errorCount} erros`);
+    const finalEmbed = createMilitaryEmbed(
+      "✅ PROCESSO CONCLUÍDO",
+      `**Processo de saída de servidores finalizado!**\n\n` +
+      `📊 **Resumo:**\n` +
+      `• **Total de servidores:** ${guilds.size}\n` +
+      `• **Saídas com sucesso:** ${successCount}\n` +
+      `• **Erros:** ${errorCount}\n\n` +
+      `${successCount > 0 ? `🔄 **O bot será desligado automaticamente em 30 segundos.**` : '❌ **Processo interrompido devido a erros.**'}`,
+      errorCount === 0 ? 0x2ECC71 : (successCount > 0 ? 0xF39C12 : 0xE74C3C)
+    );
+
+    await safeUpdateMessage(finalEmbed);
+    try {
+      const logChannel = interaction.guild?.channels?.cache?.find(channel => 
+        channel.name.toLowerCase().includes("logs") || 
+        channel.name.toLowerCase().includes("📥")
+      );
+      
+      if (logChannel) {
+        const logEmbed = createMilitaryEmbed(
+          "📋 LOG DE SAÍDA DE SERVIDORES",
+          `**Relatório completo do processo de saída:**\n\n` +
+          `👤 **Executado por:** ${interaction.user.tag}\n` +
+          `📊 **Total de servidores:** ${guilds.size}\n` +
+          `✅ **Sucessos:** ${successCount}\n` +
+          `❌ **Erros:** ${errorCount}\n` +
+          `⏰ **Data:** <t:${Math.floor(Date.now() / 1000)}:F>\n\n` +
+          `**Últimos 15 resultados:**\n${results.slice(-15).join('\n')}`,
+          0x95A5A6
+        );
+        
+        await logChannel.send({ embeds: [logEmbed] });
+      }
+    } catch (logError) {
+      console.log("Não foi possível enviar log:", logError.message);
+    }
+    if (successCount > 0) {
+      console.log(`🛑 Bot desligando em 30 segundos após sair de ${successCount} servidores`);
+      
+      setTimeout(() => {
+        console.log('✅ Desligando bot...');
+        process.exit(0);
+      }, 30000);
+    } else {
+      console.log('❌ Nenhum servidor foi processado, mantendo bot ativo');
+    }
+
+  } catch (error) {
+    console.error("Erro crítico no comando sair-todos-servidores:", error);
+    try {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ ERRO NO PROCESSO",
+        `**Ocorreu um erro durante o processo:**\n\`${error.message}\`\n\nVerifique os logs para detalhes.`,
+        0xE74C3C
+      );
+      await interaction.editReply({ embeds: [errorEmbed] });
+    } catch (finalError) {
+      console.log('Não foi possível enviar mensagem de erro final:', finalError.message);
+    }
+  }
+}
+
+// ============================================================
+// 🔍 COMANDO: /admin-diagnostico-casamento - Diagnóstico
+// ============================================================
+async function handleAdminDiagnosticoCasamento(interaction, client) {
+  const ADMIN_USER_ID = '1134320234388525086';
+  
+  if (interaction.user.id !== ADMIN_USER_ID) {
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ACESSO NEGADO",
+      "**Apenas o administrador pode usar este comando!**",
+      0xE74C3C
+    );
+    return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+  }
+
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    const user1 = interaction.options.getUser("usuario1");
+    const user2 = interaction.options.getUser("usuario2");
+    
+    if (!user1 || !user2) {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ USUÁRIOS NÃO ENCONTRADOS",
+        "**Não foi possível encontrar um ou ambos os usuários.**",
+        0xE74C3C
+      );
+      return interaction.editReply({ embeds: [errorEmbed] });
+    }
+
+    const { getDetailedMarriageDiagnosis, forceClearMarriage } = await import('../firebase.js');
+    const diagnosis = await getDetailedMarriageDiagnosis(user1.id, user2.id);
+    
+    if (!diagnosis.success) {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ ERRO NO DIAGNÓSTICO",
+        `**Não foi possível realizar o diagnóstico:** ${diagnosis.reason}`,
+        0xE74C3C
+      );
+      return interaction.editReply({ embeds: [errorEmbed] });
+    }
+
+    const diagnosticEmbed = createMilitaryEmbed(
+      "🔍 DIAGNÓSTICO DE CASAMENTO",
+      `**Diagnóstico entre ${user1.tag} e ${user2.tag}**\n\n` +
+      `💡 **Status geral:** ${diagnosis.canMarryEachOther ? '✅ Podem casar' : '❌ Não podem casar'}`,
+      diagnosis.canMarryEachOther ? 0x2ECC71 : 0xE74C3C
+    );
+
+    diagnosticEmbed.addFields({
+      name: `👤 ${user1.tag}`,
+      value: `**ID:** ${user1.id}\n` +
+             `**Casado com:** ${diagnosis.user1.marriedTo || 'Ninguém'}\n` +
+             `**Cônjuge:** ${diagnosis.user1.spouseTag || 'N/A'}\n` +
+             `**Cooldown:** ${diagnosis.user1.cooldownHoursLeft > 0 ? `${diagnosis.user1.cooldownHoursLeft}h restantes` : 'Nenhum'}\n` +
+             `**Pode casar:** ${diagnosis.user1.canMarry ? '✅ Sim' : '❌ Não'}\n` +
+             `**Último divórcio:** ${diagnosis.user1.lastDivorce ? `<t:${Math.floor(diagnosis.user1.lastDivorce.seconds)}:R>` : 'Nunca'}`,
+      inline: true
+    });
+
+    diagnosticEmbed.addFields({
+      name: `👤 ${user2.tag}`,
+      value: `**ID:** ${user2.id}\n` +
+             `**Casado com:** ${diagnosis.user2.marriedTo || 'Ninguém'}\n` +
+             `**Cônjuge:** ${diagnosis.user2.spouseTag || 'N/A'}\n` +
+             `**Cooldown:** ${diagnosis.user2.cooldownHoursLeft > 0 ? `${diagnosis.user2.cooldownHoursLeft}h restantes` : 'Nenhum'}\n` +
+             `**Pode casar:** ${diagnosis.user2.canMarry ? '✅ Sim' : '❌ Não'}\n` +
+             `**Último divórcio:** ${diagnosis.user2.lastDivorce ? `<t:${Math.floor(diagnosis.user2.lastDivorce.seconds)}:R>` : 'Nunca'}`,
+      inline: true
+    });
+
+    const problems = [];
+    
+    if (diagnosis.user1.marriedTo) problems.push(`❌ ${user1.tag} está casado com ${diagnosis.user1.spouseTag}`);
+    if (diagnosis.user2.marriedTo) problems.push(`❌ ${user2.tag} está casado com ${diagnosis.user2.spouseTag}`);
+    if (diagnosis.user1.cooldownHoursLeft > 0) problems.push(`⏰ ${user1.tag} tem cooldown: ${diagnosis.user1.cooldownHoursLeft}h`);
+    if (diagnosis.user2.cooldownHoursLeft > 0) problems.push(`⏰ ${user2.tag} tem cooldown: ${diagnosis.user2.cooldownHoursLeft}h`);
+    if (user1.id === user2.id) problems.push(`🚫 Mesmo usuário`);
+
+    if (problems.length > 0) {
+      diagnosticEmbed.addFields({
+        name: "🚫 PROBLEMAS IDENTIFICADOS",
+        value: problems.join('\n'),
+        inline: false
+      });
+    }
+
+    const hasProblems = problems.length > 0;
+    let actionRow = null;
+
+    if (hasProblems) {
+      actionRow = new ActionRowBuilder()
+        .addComponents(
+          new ButtonBuilder()
+            .setLabel('🔄 LIMPAR USER 1')
+            .setStyle(ButtonStyle.Danger)
+            .setCustomId(`admin_force_clear_${user1.id}`),
+          new ButtonBuilder()
+            .setLabel('🔄 LIMPAR USER 2')
+            .setStyle(ButtonStyle.Danger)
+            .setCustomId(`admin_force_clear_${user2.id}`),
+          new ButtonBuilder()
+            .setLabel('🔄 LIMPAR AMBOS')
+            .setStyle(ButtonStyle.Danger)
+            .setCustomId(`admin_force_clear_both_${user1.id}_${user2.id}`)
+        );
+    }
+
+    const replyData = { embeds: [diagnosticEmbed] };
+    if (actionRow) replyData.components = [actionRow];
+
+    await interaction.editReply(replyData);
+
+  } catch (error) {
+    console.error("Erro no comando diagnóstico:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO INTERNO",
+      "**Ocorreu um erro ao realizar o diagnóstico.**\n\nTente novamente.",
+      0xE74C3C
+    );
+    await interaction.editReply({ embeds: [errorEmbed] });
+  }
+}
+
+// ============================================================
+// 🔄 HANDLER: Forçar limpeza de casamento
+// ============================================================
+async function handleAdminForceClear(interaction, targetUserId, client) {
+  const ADMIN_USER_ID = '1134320234388525086';
+  
+  if (interaction.user.id !== ADMIN_USER_ID) {
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ACESSO NEGADO",
+      "**Apenas o administrador pode usar este comando!**",
+      0xE74C3C
+    );
+    return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+  }
+
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    const targetUser = await client.users.fetch(targetUserId);
+    const { forceClearMarriage } = await import('../firebase.js');
+    const result = await forceClearMarriage(targetUserId);
+    
+    if (result.success) {
+      const successEmbed = createMilitaryEmbed(
+        "✅ LIMPEZA REALIZADA",
+        `**Dados de casamento limpos para ${targetUser.tag}!**\n\n` +
+        `🔄 **Foram removidos:**\n` +
+        `• Registro de casamento ativo\n` +
+        `• Vínculo com cônjuge\n` +
+        `• Cooldown de divórcio\n\n` +
+        `💍 **Usuário agora pode casar normalmente.**`,
+        0x2ECC71
+      );
+
+      try {
+        await interaction.message.edit({
+          components: []
+        });
+      } catch (editError) {
+      }
+
+      await interaction.editReply({ embeds: [successEmbed] });
+
+    } else {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ ERRO NA LIMPEZA",
+        `**Não foi possível limpar os dados:** ${result.reason}`,
+        0xE74C3C
+      );
+      await interaction.editReply({ embeds: [errorEmbed] });
+    }
+
+  } catch (error) {
+    console.error("Erro ao forçar limpeza:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO",
+      "**Ocorreu um erro ao forçar a limpeza.**",
+      0xE74C3C
+    );
+    await interaction.editReply({ embeds: [errorEmbed] });
+  }
+}
+
+// ============================================================
+// ⚙️ HANDLER: Confirmar remoção de cooldown (CORRIGIDO)
+// ============================================================
+async function handleAdminConfirmRemoveCooldown(interaction, targetUserId, client) {
+  const ADMIN_USER_ID = '1134320234388525086';
+  
+  if (interaction.user.id !== ADMIN_USER_ID) {
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ACESSO NEGADO",
+      "**Apenas o administrador pode usar este comando!**",
+      0xE74C3C
+    );
+    return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+  }
+
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    const targetUser = await client.users.fetch(targetUserId);
+    const { removeMarriageCooldown } = await import('../firebase.js');
+    
+    const result = await removeMarriageCooldown(targetUserId);
+    
+    if (result.success) {
+      const successEmbed = createMilitaryEmbed(
+        "✅ COOLDOWN REMOVIDO",
+        `**Cooldown removido com sucesso para ${targetUser.tag}!**\n\n` +
+        `⚡ **Usuário agora pode casar imediatamente.**\n` +
+        `💍 **Pode usar \`/casar\` sem restrições.**\n` +
+        `💰 **Receberá 100 Bellos no próximo casamento.**`,
+        0x2ECC71
+      );
+
+      try {
+        await interaction.message.edit({
+          embeds: [successEmbed],
+          components: []
+        });
+      } catch (editError) {
+        console.log('⚠️ Não foi possível editar a mensagem original, mas a ação foi realizada.');
+      }
+
+      await interaction.editReply({ 
+        embeds: [createMilitaryEmbed("✅ Ação concluída!", "Cooldown removido com sucesso.", 0x2ECC71)]
+      });
+
+      try {
+        const userNotifyEmbed = createMilitaryEmbed(
+          "⚡ COOLDOWN REMOVIDO",
+          `**${targetUser.tag}, seu cooldown de casamento foi removido!**\n\n` +
+          `🎉 **Você pode casar novamente imediatamente!**\n` +
+          `💍 **Use \`/casar\` para encontrar um parceiro!**\n` +
+          `💰 **Ganhe 100 Bellos no casamento!**\n\n` +
+          `⚙️ **Ação administrativa realizada por:** ${interaction.user.tag}`,
+          0x2ECC71
+        );
+
+        await targetUser.send({ embeds: [userNotifyEmbed] });
+      } catch (dmError) {
+        console.log(`Não foi possível enviar DM para ${targetUser.tag}`);
+      }
+
+    } else {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ ERRO",
+        `**Falha ao remover cooldown:** ${result.reason}`,
+        0xE74C3C
+      );
+      await interaction.editReply({ embeds: [errorEmbed] });
+    }
+
+  } catch (error) {
+    console.error("Erro ao confirmar remoção:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO",
+      "**Ocorreu um erro ao processar a remoção do cooldown.**\n\nA ação pode ter sido realizada, mas houve um erro na confirmação.",
+      0xE74C3C
+    );
+    await interaction.editReply({ embeds: [errorEmbed] });
+  }
+}
+
+// ============================================================
+// ⚙️ COMANDO ALTERNATIVO: Com confirmação
+// ============================================================
+async function handleAdminRemoverCooldown(interaction, client) {
+  const ADMIN_USER_ID = '1134320234388525086';
+  
+  if (interaction.user.id !== ADMIN_USER_ID) {
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ACESSO NEGADO",
+      "**Apenas o administrador pode usar este comando!**",
+      0xE74C3C
+    );
+    return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+  }
+
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    const targetUser = interaction.options.getUser("usuario");
+    
+    if (!targetUser) {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ USUÁRIO NÃO ENCONTRADO",
+        "**Não foi possível encontrar o usuário.**",
+        0xE74C3C
+      );
+      return interaction.editReply({ embeds: [errorEmbed] });
+    }
+
+    const { getUserMarriageStatus } = await import('../firebase.js');
+    
+    const userStatus = await getUserMarriageStatus(targetUser.id);
+    
+    if (!userStatus.success) {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ ERRO",
+        `**Erro ao buscar usuário:** ${userStatus.reason}`,
+        0xE74C3C
+      );
+      return interaction.editReply({ embeds: [errorEmbed] });
+    }
+
+    const infoEmbed = createMilitaryEmbed(
+      "⚙️ REMOVER COOLDOWN - CONFIRMAÇÃO",
+      `**Você está prestes a remover o cooldown de:** ${targetUser.tag}\n\n` +
+      `📊 **INFORMAÇÕES ATUAIS:**\n` +
+      `• **ID:** ${targetUser.id}\n` +
+      `• **Casado:** ${userStatus.marriedTo ? '✅ Sim' : '❌ Não'}\n` +
+      `• **Cooldown ativo:** ${userStatus.cooldownActive ? '✅ Sim' : '❌ Não'}\n` +
+      `• **Pode casar:** ${userStatus.canMarry ? '✅ Sim' : '❌ Não'}\n` +
+      `• **Último divórcio:** ${userStatus.lastDivorce ? `<t:${Math.floor(userStatus.lastDivorce.seconds)}:F>` : 'Nunca'}\n\n` +
+      `⚠️ **Esta ação irá:**\n` +
+      `• Remover o cooldown de 24h\n` +
+      `• Permitir casamento imediato\n` +
+      `• Notificar o usuário\n\n` +
+      `**Confirma a remoção do cooldown?**`,
+      0xF39C12
+    );
+
+    const confirmRow = new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('✅ SIM, REMOVER COOLDOWN')
+          .setStyle(ButtonStyle.Success)
+          .setCustomId(`admin_confirm_remove_cooldown_${targetUser.id}`),
+        new ButtonBuilder()
+          .setLabel('❌ CANCELAR')
+          .setStyle(ButtonStyle.Danger)
+          .setCustomId('admin_cancel_remove_cooldown')
+      );
+
+    await interaction.editReply({ 
+      embeds: [infoEmbed],
+      components: [confirmRow]
+    });
+
+  } catch (error) {
+    console.error("Erro no comando admin:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO",
+      "**Erro ao processar comando.**",
+      0xE74C3C
+    );
+    await interaction.editReply({ embeds: [errorEmbed] });
+  }
+}
+
+// ============================================================
+// ❌ HANDLER: Cancelar remoção de cooldown
+// ============================================================
+async function handleAdminCancelRemoveCooldown(interaction, client) {
+  const ADMIN_USER_ID = '1134320234388525086';
+  
+  if (interaction.user.id !== ADMIN_USER_ID) {
+    return;
+  }
+
+  await interaction.deferReply({ ephemeral: true });
+
+  const cancelEmbed = createMilitaryEmbed(
+    "❌ AÇÃO CANCELADA",
+    "**Remoção de cooldown cancelada.**\n\nNenhuma alteração foi feita.",
+    0x95A5A6
+  );
+
+  await interaction.message.edit({
+    embeds: [cancelEmbed],
+    components: []
+  });
+
+  await interaction.editReply({ 
+    embeds: [createMilitaryEmbed("❌ Cancelado", "Ação cancelada pelo usuário.", 0x95A5A6)]
+  });
+}
+
+// ============================================================
+// 💍 COMANDO: /casar - Casar com outro usuário (PÚBLICO)
+// ============================================================
+async function handleCasar(interaction, client) {
+  try {
+    const targetUser = interaction.options.getUser("usuario");
+    
+    if (!targetUser) {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ USUÁRIO NÃO ENCONTRADO",
+        "**Não foi possível encontrar o usuário especificado.**\n\nVerifique se o usuário existe e tente novamente.",
+        0xE74C3C
+      );
+      return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+    }
+
+    if (targetUser.bot) {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ CASAMENTO COM BOT",
+        "**Você não pode casar com um bot!**\n\nEncontre um parceiro humano para se casar. 💕",
+        0xE74C3C
+      );
+      return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+    }
+
+    if (targetUser.id === interaction.user.id) {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ CASAMENTO CONSIGO MESMO",
+        "**Você não pode casar consigo mesmo!**\n\nIsso seria um pouco solitário, não acha? 😅",
+        0xE74C3C
+      );
+      return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+    }
+
+    const { canUserMarry } = await import('../firebase.js');
+    
+    const canMarry = await canUserMarry(interaction.user.id);
+    
+    if (!canMarry.canMarry) {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ NÃO PODE CASAR",
+        `**${interaction.user.tag}, você não pode casar no momento!**\n\n**Motivo:** ${canMarry.reason}\n\n💡 **Dica:** Use \`/casamento\` para ver seu status atual.`,
+        0xE74C3C
+      );
+      return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+    }
+
+    const canTargetMarry = await canUserMarry(targetUser.id);
+    
+    if (!canTargetMarry.canMarry) {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ PARCEIRO NÃO PODE CASAR",
+        `**${targetUser.tag} não pode casar no momento!**\n\n**Motivo:** ${canTargetMarry.reason}\n\n💡 **Peça para a pessoa usar \`/casamento\` para ver o status.**`,
+        0xE74C3C
+      );
+      return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+    }
+
+    const confirmEmbed = createMilitaryEmbed(
+      "💍 PEDIDO DE CASAMENTO",
+      `**${interaction.user} está pedindo ${targetUser} em casamento!**\n\n` +
+      `💕 **Detalhes do casamento:**\n` +
+      `• **Noivo/Noiva:** ${interaction.user.tag}\n` +
+      `• **Parceiro(a):** ${targetUser.tag}\n` +
+      `• **Recompensa:** 100 Bellos para cada\n` +
+      `• **Duração:** Até que o divórcio os separe\n\n` +
+      `📜 **Termos do casamento:**\n` +
+      `• Use \`/divorciar\` para terminar o casamento\n` +
+      `• Cooldown de 24h após divórcio\n` +
+      `• Ambos ganham 100 Bellos\n\n` +
+      `**${targetUser}, apenas você pode aceitar ou recusar este pedido!**\n` +
+      `💍 **Clique em um dos botões abaixo para responder:**`,
+      0xE91E63
+    );
+
+    const confirmRow = new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('💍 SIM, ACEITO CASAR!')
+          .setStyle(ButtonStyle.Success)
+          .setCustomId(`accept_marriage_${interaction.user.id}_${targetUser.id}`),
+        new ButtonBuilder()
+          .setLabel('❌ NÃO, RECUSAR')
+          .setStyle(ButtonStyle.Danger)
+          .setCustomId(`reject_marriage_${interaction.user.id}_${targetUser.id}`)
+      );
+
+    await interaction.reply({ 
+      content: `💕 ${targetUser} **PEDIDO DE CASAMENTO PÚBLICO!** 💍`,
+      embeds: [confirmEmbed],
+      components: [confirmRow]
+    });
+
+  } catch (error) {
+    console.error("Erro no comando casar:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO NO CASAMENTO",
+      "**Ocorreu um erro ao processar o pedido de casamento.**\n\nTente novamente.",
+      0xE74C3C
+    );
+    await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+  }
+}
+
+// ============================================================
+// 🔒 FUNÇÃO: Verificar se usuário pode interagir com botão
+// ============================================================
+function canUserInteractWithButton(interaction, targetUserId) {
+  const canInteract = interaction.user.id === targetUserId;
+  
+  if (!canInteract) {
+    console.log(`❌ Usuário ${interaction.user.tag} (${interaction.user.id}) tentou interagir com botão destinado a ${targetUserId}`);
+  }
+  
+  return canInteract;
+}
+
+// ============================================================
+// 💔 COMANDO: /divorciar - Divorciar-se
+// ============================================================
+async function handleDivorciar(interaction, client) {
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    const { performDivorce, getMarriageInfo } = await import('../firebase.js');
+    const marriageInfo = await getMarriageInfo(interaction.user.id);
+    
+    if (!marriageInfo.isMarried) {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ NÃO CASADO",
+        `**${interaction.user.tag}, você não está casado no momento!**\n\n` +
+        `💡 **Dica:** Use \`/casar\` para encontrar um parceiro e ganhar 100 Bellos!`,
+        0x95A5A6
+      );
+      return interaction.editReply({ embeds: [errorEmbed] });
+    }
+
+    const confirmEmbed = createMilitaryEmbed(
+      "💔 PEDIDO DE DIVÓRCIO",
+      `**${interaction.user.tag}, você está prestes a se divorciar de ${marriageInfo.spouse.tag}!**\n\n` +
+      `📜 **Detalhes do casamento:**\n` +
+      `• **Cônjuge:** ${marriageInfo.spouse.tag}\n` +
+      `• **Tempo de casamento:** ${marriageInfo.daysMarried} dias\n` +
+      `• **Cooldown pós-divórcio:** 24 horas\n\n` +
+      `⚠️ **Atenção:** Após o divórcio, você precisará esperar 24 horas para casar novamente.\n\n` +
+      `**Tem certeza que deseja se divorciar?**`,
+      0xF39C12
+    );
+
+    const confirmRow = new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('💔 SIM, DIVORCIAR')
+          .setStyle(ButtonStyle.Danger)
+          .setCustomId(`confirm_divorce_${interaction.user.id}`),
+        new ButtonBuilder()
+          .setLabel('❌ CANCELAR')
+          .setStyle(ButtonStyle.Secondary)
+          .setCustomId(`cancel_divorce_${interaction.user.id}`)
+      );
+
+    await interaction.editReply({ 
+      embeds: [confirmEmbed],
+      components: [confirmRow]
+    });
+
+  } catch (error) {
+    console.error("Erro no comando divorciar:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO NO DIVÓRCIO",
+      "**Ocorreu um erro ao processar o divórcio.**\n\nTente novamente.",
+      0xE74C3C
+    );
+    await interaction.editReply({ embeds: [errorEmbed] });
+  }
+}
+
+// ============================================================
+// 💑 COMANDO: /casamento - Ver informações do casamento
+// ============================================================
+async function handleCasamento(interaction, client) {
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    const { getMarriageInfo } = await import('../firebase.js');
+    const marriageInfo = await getMarriageInfo(interaction.user.id);
+    
+    if (!marriageInfo.isMarried) {
+      const singleEmbed = createMilitaryEmbed(
+        "💍 STATUS DE CASAMENTO",
+        `**${interaction.user.tag}, você está solteiro(a)!**\n\n` +
+        `💕 **Vantagens de casar:**\n` +
+        `• **100 Bellos** de recompensa\n` +
+        `• Status especial no servidor\n` +
+        `• Companheirismo virtual\n` +
+        `• Ranking de casamentos\n\n` +
+        `💡 **Como casar:**\n` +
+        `Use \`/casar @usuário\` para pedir alguém em casamento!\n\n` +
+        `🎯 **Requisitos:**\n` +
+        `• Ambos devem estar solteiros\n` +
+        `• Sem cooldown de divórcio\n` +
+        `• Apenas com usuários reais`,
+        0x95A5A6
+      );
+      return interaction.editReply({ embeds: [singleEmbed] });
+    }
+
+    const marriageEmbed = createMilitaryEmbed(
+      "💑 SEU CASAMENTO",
+      `**${interaction.user.tag}, aqui estão as informações do seu casamento:**\n\n` +
+      `👰‍♂️ **Cônjuge:** ${marriageInfo.spouse.tag}\n` +
+      `💕 **Casados há:** ${marriageInfo.daysMarried} dias\n` +
+      `📅 **Desde:** <t:${Math.floor(new Date(marriageInfo.marriedSince.seconds * 1000) / 1000)}:F>\n` +
+      `🆔 **ID do casamento:** ${marriageInfo.marriageId}\n` +
+      `💰 **Recompensa recebida:** 100 Bellos\n\n` +
+      `💝 **Que seu amor continue crescendo!**`,
+      0xE91E63
+    );
+
+    marriageEmbed.addFields(
+      {
+        name: "📊 ESTATÍSTICAS",
+        value: `💍 **Dias juntos:** ${marriageInfo.daysMarried}\n` +
+               `🏆 **Posição no ranking:** Em breve\n` +
+               `💎 **Bellos do cônjuge:** ${marriageInfo.spouse.coins || 'N/A'}`,
+        inline: true
+      },
+      {
+        name: "⚡ AÇÕES",
+        value: `💔 **Divórcio:** \`/divorciar\`\n` +
+               `🏆 **Ranking:** \`/ranking-casamento\`\n` +
+               `🔄 **Cooldown divórcio:** 24h`,
+        inline: true
+      }
+    );
+
+    marriageEmbed.setFooter({ 
+      text: `Amor é lindo! 💕 • ${new Date().toLocaleDateString('pt-BR')}` 
+    });
+
+    await interaction.editReply({ embeds: [marriageEmbed] });
+
+  } catch (error) {
+    console.error("Erro no comando casamento:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO",
+      "**Ocorreu um erro ao buscar informações do casamento.**\n\nTente novamente.",
+      0xE74C3C
+    );
+    await interaction.editReply({ embeds: [errorEmbed] });
+  }
+}
+
+// ============================================================
+// 🏆 COMANDO: /ranking-casamento - Ranking dos casamentos
+// ============================================================
+async function handleRankingCasamento(interaction, client) {
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    const { getMarriageRanking, getMarriageInfo } = await import('../firebase.js');
+    
+    const ranking = await getMarriageRanking(10);
+    const userMarriage = await getMarriageInfo(interaction.user.id);
+    
+    if (ranking.length === 0) {
+      const emptyEmbed = createMilitaryEmbed(
+        "🏆 RANKING DE CASAMENTOS",
+        `**${interaction.user.tag}, não há casamentos ativos no servidor!**\n\n` +
+        `💍 **Seja o primeiro a casar!**\n` +
+        `Use \`/casar @usuário\` e ganhe **100 Bellos**!\n\n` +
+        `💕 **Vantagens:**\n` +
+        `• Recompensa imediata\n` +
+        `• Status especial\n` +
+        `• Apareça no ranking\n` +
+        `• Companheirismo virtual`,
+        0x95A5A6
+      );
+      return interaction.editReply({ embeds: [emptyEmbed] });
+    }
+
+    const rankingEmbed = createMilitaryEmbed(
+      "🏆 RANKING DE CASAMENTOS",
+      `**Top casamentos mais longos do servidor:**\n\n` +
+      `💕 **Casais que estão juntos há mais tempo:**`,
+      0xE91E63
+    );
+
+    let rankingText = '';
+    ranking.forEach((couple, index) => {
+      const medal = getMarriageMedal(index + 1);
+      rankingText += `${medal} **${couple.userTag}** 💕 **${couple.spouseTag}** - ${couple.daysMarried} dias\n`;
+    });
+    rankingEmbed.addFields({
+      name: "💑 TOP CASAMENTOS",
+      value: rankingText,
+      inline: false
+    });
+
+    if (userMarriage.isMarried) {
+      const userPosition = ranking.findIndex(couple => 
+        couple.userId === interaction.user.id || couple.spouseTag === userMarriage.spouse.tag
+      ) + 1;
+      if (userPosition > 0) {
+        rankingEmbed.addFields({
+          name: "📊 SUA POSIÇÃO",
+          value: `**${userPosition}º lugar** - ${userMarriage.daysMarried} dias com ${userMarriage.spouse.tag}`,
+          inline: false
+        });
+      } else {
+        rankingEmbed.addFields({
+          name: "📊 SEU CASAMENTO",
+          value: `**${userMarriage.daysMarried} dias** com ${userMarriage.spouse.tag}`,
+          inline: false
+        });
+      }
+    }
+
+    rankingEmbed.addFields(
+      {
+        name: "💰 RECOMPENSA",
+        value: "**100 Bellos** por casamento\n💍 Use `/casar`",
+        inline: true
+      },
+      {
+        name: "⏰ COOLDOWN",
+        value: "**24h** após divórcio\n💔 Use `/divorciar`",
+        inline: true
+      }
+    );
+
+    rankingEmbed.setFooter({ 
+      text: `Amor é a maior recompensa! 💕 • ${new Date().toLocaleDateString('pt-BR')}` 
+    });
+
+    await interaction.editReply({ embeds: [rankingEmbed] });
+
+  } catch (error) {
+    console.error("Erro no comando ranking-casamento:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO",
+      "**Ocorreu um erro ao buscar o ranking de casamentos.**\n\nTente novamente.",
+      0xE74C3C
+    );
+    await interaction.editReply({ embeds: [errorEmbed] });
+  }
+}
+
+// ============================================================
+// 💍 HANDLER: Aceitar casamento (COM VERIFICAÇÃO)
+// ============================================================
+async function handleAcceptMarriage(interaction, userId1, userId2, client) {
+  if (!canUserInteractWithButton(interaction, userId2)) {
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ACESSO NEGADO",
+      `**${interaction.user.tag}, apenas ${client.users.cache.get(userId2)?.tag || 'o usuário marcado'} pode responder a este pedido!**\n\n` +
+      `💡 **Dica:** Espere a pessoa responder ou faça seu próprio pedido de casamento.`,
+      0xE74C3C
+    );
+    return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+  }
+  await interaction.deferReply({ ephemeral: false }); // Agora é público
+  try {
+    const { performMarriage } = await import('../firebase.js');
+    
+    const user1 = await client.users.fetch(userId1);
+    const user2 = await client.users.fetch(userId2);
+    
+    const result = await performMarriage(
+      userId1, 
+      user1.tag, 
+      userId2, 
+      user2.tag
+    );
+    
+    if (result.success) {
+      const successEmbed = createMilitaryEmbed(
+        "💍 CASAMENTO REALIZADO!",
+        `**${user1.tag} e ${user2.tag} estão oficialmente casados!**\n\n` +
+        `💕 **Parabéns aos noivos!** 🎉\n` +
+        `💰 **Recompensa:** 100 Bellos para cada\n` +
+        `🆔 **ID do casamento:** ${result.marriageId}\n` +
+        `💍 **Desde:** Agora mesmo!\n\n` +
+        `🎊 **Que sejam muito felizes!**\n` +
+        `💔 Use \`/divorciar\` para terminar o casamento\n` +
+        `📊 Use \`/casamento\` para ver informações`,
+        0xE91E63
+      );
+      await interaction.message.edit({
+        content: `💍 **PEDIDO DE CASAMENTO ACEITO!** 🎉`,
+        embeds: [createMilitaryEmbed(
+          "💍 CASAMENTO ACEITO!",
+          `**${user1.tag} 💕 ${user2.tag}**\n\n` +
+          `✅ **Pedido aceito por ${user2.tag}**\n` +
+          `💰 **Ambos receberam 100 Bellos!**\n` +
+          `🎉 **Parabéns aos noivos!**`,
+          0x2ECC71
+        )],
+        components: []
+      });
+
+      await interaction.editReply({ 
+        embeds: [successEmbed]
+      });
+
+      const publicEmbed = createMilitaryEmbed(
+        "🎉 NOVO CASAMENTO NO SERVIDOR!",
+        `**💍 TEMOS UM NOVO CASAL!**\n\n` +
+        `👰‍♂️ **${user1.tag}** 💕 **${user2.tag}** 👰‍♀️\n\n` +
+        `🎊 **Parabéns aos noivos!**\n` +
+        `💰 Ambos receberam **100 Bellos** de presente!\n\n` +
+        `💝 **Que sejam muito felizes!**\n` +
+        `📊 Use \`/ranking-casamento\` para ver o ranking de casamentos`,
+        0xE91E63
+      );
+
+      const generalChannel = interaction.guild.channels.cache.find(channel => 
+        channel.name.includes('geral') || 
+        channel.name.includes('chat') ||
+        channel.name.includes('📢') ||
+        channel.name === interaction.channel.name 
+      );
+
+      if (generalChannel && generalChannel.id !== interaction.channel.id) {
+        await generalChannel.send({ 
+          content: `🎉 **@everyone TEMOS UM NOVO CASAMENTO!** 💍`,
+          embeds: [publicEmbed] 
+        });
+      }
+
+    } else {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ ERRO NO CASAMENTO",
+        `**Não foi possível realizar o casamento!**\n\n**Motivo:** ${result.reason}\n\nTente novamente mais tarde.`,
+        0xE74C3C
+      );
+      
+      await interaction.message.edit({
+        components: []
+      });
+      
+      await interaction.editReply({ 
+        embeds: [errorEmbed]
+      });
+    }
+
+  } catch (error) {
+    console.error("Erro ao aceitar casamento:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO",
+      "**Ocorreu um erro ao processar o casamento.**\n\nTente novamente.",
+      0xE74C3C
+    );
+    await interaction.editReply({ 
+      embeds: [errorEmbed]
+    });
+  }
+}
+
+// ============================================================
+// ❌ HANDLER: Rejeitar casamento (COM VERIFICAÇÃO)
+// ============================================================
+async function handleRejectMarriage(interaction, userId1, userId2, client) {
+  if (!canUserInteractWithButton(interaction, userId2)) {
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ACESSO NEGADO",
+      `**${interaction.user.tag}, apenas ${client.users.cache.get(userId2)?.tag || 'o usuário marcado'} pode responder a este pedido!**`,
+      0xE74C3C
+    );
+    return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+  }
+
+  await interaction.deferReply({ ephemeral: false }); // Agora é público
+
+  try {
+    const user1 = await client.users.fetch(userId1);
+    const user2 = await client.users.fetch(userId2);
+    
+    const rejectEmbed = createMilitaryEmbed(
+      "❌ PEDIDO RECUSADO",
+      `**${user2.tag} recusou o pedido de casamento de ${user1.tag}.**\n\n` +
+      `💔 **Não foi dessa vez...**\n` +
+      `😔 **Talvez em outro momento!**\n\n` +
+      `🎯 **Continue procurando seu par ideal!**`,
+      0x95A5A6
+    );
+
+    await interaction.message.edit({
+      content: `💔 **PEDIDO DE CASAMENTO RECUSADO**`,
+      embeds: [createMilitaryEmbed(
+        "💔 PEDIDO RECUSADO",
+        `**${user1.tag} → ${user2.tag}**\n\n` +
+        `❌ **Pedido recusado por ${user2.tag}**\n` +
+        `😔 **Não foi dessa vez...**\n\n` +
+        `💡 **Talvez em outro momento!**`,
+        0x95A5A6
+      )],
+      components: []
+    });
+
+    await interaction.editReply({ 
+      embeds: [rejectEmbed]
+    });
+
+    try {
+      const notifiedEmbed = createMilitaryEmbed(
+        "💔 PEDIDO RECUSADO",
+        `**${user1.tag}, seu pedido de casamento para ${user2.tag} foi recusado.**\n\n` +
+        `😔 **Não desanime!**\n` +
+        `💕 **O amor certo vai aparecer!**\n\n` +
+        `🎯 **Continue tentando com outras pessoas!**`,
+        0x95A5A6
+      );
+
+      await user1.send({ embeds: [notifiedEmbed] });
+    } catch (dmError) {
+    }
+
+  } catch (error) {
+    console.error("Erro ao rejeitar casamento:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO",
+      "**Ocorreu um erro ao processar a recusa.**",
+      0xE74C3C
+    );
+    await interaction.editReply({ 
+      embeds: [errorEmbed]
+    });
+  }
+}
+
+// ============================================================
+// 💔 HANDLER: Confirmar divórcio
+// ============================================================
+async function handleConfirmDivorce(interaction, userId, client) {
+  await interaction.deferReply({ ephemeral: true });
+
+  try {
+    const { performDivorce, getMarriageInfo } = await import('../firebase.js');
+    const marriageInfo = await getMarriageInfo(userId);
+    const result = await performDivorce(userId);
+    
+    if (result.success) {
+      const divorceEmbed = createMilitaryEmbed(
+        "💔 DIVÓRCIO REALIZADO",
+        `**${interaction.user.tag}, você está oficialmente divorciado de ${marriageInfo.spouse.tag}!**\n\n` +
+        `📜 **Detalhes do divórcio:**\n` +
+        `• **Ex-cônjuge:** ${marriageInfo.spouse.tag}\n` +
+        `• **Duração do casamento:** ${marriageInfo.daysMarried} dias\n` +
+        `• **Cooldown para novo casamento:** 24 horas\n\n` +
+        `💡 **Você pode casar novamente em 24 horas.**\n` +
+        `🎯 **Use \`/casar\` quando o cooldown acabar!**`,
+        0x95A5A6
+      );
+
+      await interaction.editReply({ 
+        embeds: [divorceEmbed],
+        components: [] 
+      });
+
+      try {
+        const exSpouse = await client.users.fetch(marriageInfo.spouse.id);
+        const exSpouseEmbed = createMilitaryEmbed(
+          "💔 DIVÓRCIO REALIZADO",
+          `**${exSpouse.tag}, seu casamento com ${interaction.user.tag} foi terminado!**\n\n` +
+          `📜 **Detalhes:**\n` +
+          `• **Iniciado por:** ${interaction.user.tag}\n` +
+          `• **Duração:** ${marriageInfo.daysMarried} dias\n` +
+          `• **Cooldown:** 24 horas\n\n` +
+          `💡 **Você pode casar novamente em 24 horas.**`,
+          0x95A5A6
+        );
+
+        await exSpouse.send({ embeds: [exSpouseEmbed] });
+      } catch (dmError) {
+      }
+
+    } else {
+      const errorEmbed = createMilitaryEmbed(
+        "❌ ERRO NO DIVÓRCIO",
+        `**Não foi possível realizar o divórcio!**\n\n**Motivo:** ${result.reason}`,
+        0xE74C3C
+      );
+      await interaction.editReply({ 
+        embeds: [errorEmbed],
+        components: [] 
+      });
+    }
+
+  } catch (error) {
+    console.error("Erro ao confirmar divórcio:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO",
+      "**Ocorreu um erro ao processar o divórcio.**\n\nTente novamente.",
+      0xE74C3C
+    );
+    await interaction.editReply({ 
+      embeds: [errorEmbed],
+      components: [] 
+    });
+  }
+}
+
+// ============================================================
+// ❌ HANDLER: Cancelar divórcio
+// ============================================================
+async function handleCancelDivorce(interaction, userId, client) {
+  await interaction.deferReply({ ephemeral: true });
+
+  const cancelEmbed = createMilitaryEmbed(
+    "✅ DIVÓRCIO CANCELADO",
+    `**${interaction.user.tag}, o pedido de divórcio foi cancelado.**\n\n` +
+    `💕 **Que bom que vocês continuam juntos!**\n` +
+    `🎉 **Aproveitem o casamento!**\n\n` +
+    `💡 **Dica:** Use \`/casamento\` para ver informações do seu relacionamento.`,
+    0x2ECC71
+  );
+
+  await interaction.editReply({ 
+    embeds: [cancelEmbed],
+    components: [] 
+  });
+}
+
+// ============================================================
+// 🎯 FUNÇÕES AUXILIARES
+// ============================================================
+function getMarriageMedal(position) {
+  switch (position) {
+    case 1: return "🥇";
+    case 2: return "🥈"; 
+    case 3: return "🥉";
+    default: return `**${position}.**`;
   }
 }
 
 // ============================================================
 // 📊 COMANDO: /estatisticas-videos
 // ============================================================
-
 async function handleEstatisticasVideos(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
@@ -276,7 +1544,6 @@ async function handleEstatisticasVideos(interaction, client) {
       0x3498DB
     );
 
-    // Adicionar últimos vídeos
     if (stats.videos.length > 0) {
       const recentVideos = stats.videos.slice(0, 5);
       let videosText = '';
@@ -326,7 +1593,6 @@ async function handleEstatisticasVideos(interaction, client) {
 // ============================================================
 // 📋 COMANDO: /regras-videos
 // ============================================================
-
 async function handleRegrasVideos(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
@@ -381,13 +1647,10 @@ async function handleRegrasVideos(interaction, client) {
 // ============================================================
 // 🎁 COMANDO: /lootbox - COMPRAR E ABRIR LOOTBOX
 // ============================================================
-
-// No comando /lootbox, atualize as probabilidades:
 async function handleLootbox(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    // Criar embed de confirmação com RARIDADES ATUALIZADAS
     const confirmEmbed = createMilitaryEmbed(
       "🎁 LOOTBOX - CONFIRMAÇÃO",
       `**${interaction.user.tag}, você está prestes a comprar uma lootbox!**\n\n` +
@@ -407,7 +1670,6 @@ async function handleLootbox(interaction, client) {
       0xF39C12
     );
 
-    // Botões de confirmação (mantido igual)
     const confirmRow = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
@@ -439,7 +1701,6 @@ async function handleLootbox(interaction, client) {
 // ============================================================
 // 📋 COMANDO: /meus-codigos - VER CÓDIGOS OBTIDOS
 // ============================================================
-
 async function handleMeusCodigos(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
@@ -458,7 +1719,6 @@ async function handleMeusCodigos(interaction, client) {
       return interaction.editReply({ embeds: [emptyEmbed] });
     }
 
-    // Agrupar por raridade
     const commonCodes = userCodes.filter(c => c.rarity === 'Comum');
     const rareCodes = userCodes.filter(c => c.rarity === 'Raro');
     const epicCodes = userCodes.filter(c => c.rarity === 'Épico');
@@ -468,12 +1728,11 @@ async function handleMeusCodigos(interaction, client) {
       "📋 SEUS CÓDIGOS DE LOOTBOX",
       `**${interaction.user.tag}, aqui estão todos os seus códigos:**\n\n` +
       `📊 **Total de códigos:** ${userCodes.length}\n` +
-      `🔄 **Códigos únicos:** ${[...new Set(userCodes.map(c => c.code))].length}/7\n` + // ✅ ATUALIZADO
+      `🔄 **Códigos únicos:** ${[...new Set(userCodes.map(c => c.code))].length}/7\n` + 
       `📦 **Duplicatas:** ${userCodes.filter(c => c.isDuplicate).length}`,
       0x3498DB
     );
 
-    // Adicionar códigos por raridade
     if (commonCodes.length > 0) {
       codesEmbed.addFields({
         name: `🟢 COMUM (${commonCodes.length})`,
@@ -534,8 +1793,6 @@ async function handleMeusCodigos(interaction, client) {
 // ============================================================
 // 📊 COMANDO: /estatisticas-lootbox - VER ESTATÍSTICAS
 // ============================================================
-
-// No comando /estatisticas-lootbox, atualize o total de códigos:
 async function handleEstatisticasLootbox(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
@@ -560,13 +1817,12 @@ async function handleEstatisticasLootbox(interaction, client) {
       `📦 **Lootboxes abertas:** ${stats.totalOpened}\n` +
       `💰 **Bellos gastos:** ${stats.totalOpened * 30}\n` +
       `🎯 **Códigos obtidos:** ${stats.totalCodes}\n` +
-      `⭐ **Códigos únicos:** ${stats.uniqueCodes}/7\n` + // ✅ ATUALIZADO: 7 códigos no total
+      `⭐ **Códigos únicos:** ${stats.uniqueCodes}/7\n` + 
       `🔁 **Duplicatas:** ${stats.duplicates}\n` +
       `📈 **Taxa de duplicata:** ${((stats.duplicates / stats.totalCodes) * 100).toFixed(1)}%`,
       0x9B59B6
     );
 
-    // Adicionar estatísticas de raridade
     statsEmbed.addFields(
       {
         name: "🎲 DISTRIBUIÇÃO POR RARIDADE",
@@ -578,7 +1834,6 @@ async function handleEstatisticasLootbox(interaction, client) {
       }
     );
 
-    // Calcular progresso da coleção (ATUALIZADO para 7 códigos)
     const collectionPercent = (stats.uniqueCodes / 7) * 100;
     const progressBar = createProgressBar(collectionPercent);
     
@@ -610,21 +1865,19 @@ async function handleEstatisticasLootbox(interaction, client) {
 // ============================================================
 // 🎯 HANDLER DO BOTÃO DE CONFIRMAÇÃO DA LOOTBOX
 // ============================================================
-
 async function handleConfirmLootbox(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
     const { openLootbox } = await import('../firebase.js');
-    
     const result = await openLootbox(interaction.user.id);
     
     if (result.success) {
       const rarityColors = {
-        'Comum': 0x2ECC71,    // Verde
-        'Raro': 0x3498DB,     // Azul
-        'Épico': 0x9B59B6,    // Roxo
-        'Lendário': 0xF39C12  // Laranja
+        'Comum': 0x2ECC71,    
+        'Raro': 0x3498DB,     
+        'Épico': 0x9B59B6,    
+        'Lendário': 0xF39C12  
       };
 
       const rarityEmojis = {
@@ -646,7 +1899,6 @@ async function handleConfirmLootbox(interaction, client) {
         rarityColors[result.item.rarity]
       );
 
-      // Adicionar mensagem especial para lendários
       if (result.item.rarity === 'Lendário') {
         resultEmbed.addFields({
           name: "🎉 PARABÉNS!",
@@ -694,7 +1946,6 @@ async function handleConfirmLootbox(interaction, client) {
 // ============================================================
 // 🎯 FUNÇÕES AUXILIARES
 // ============================================================
-
 function createProgressBar(percentage, length = 10) {
   const filled = Math.round((percentage / 100) * length);
   const empty = length - filled;
@@ -712,7 +1963,6 @@ function getCollectionMessage(percentage) {
 // ============================================================
 // 🎁 COMANDO: /diario - RECOMPENSA DIÁRIA (100 BELLOS)
 // ============================================================
-
 async function handleDiario(interaction, client) {
   await interaction.deferReply({ ephemeral: false });
 
@@ -734,7 +1984,6 @@ async function handleDiario(interaction, client) {
         0xF39C12
       );
 
-      // Adicionar emojis visuais
       rewardEmbed.addFields(
         {
           name: "🔥 STREAK ATUAL",
@@ -748,15 +1997,13 @@ async function handleDiario(interaction, client) {
         },
         {
           name: "🎯 MÁXIMO STREAK",
-          value: "**150 Bellos** em 5 dias", // ✅ CORRIGIDO: 100 base + 50 bônus
+          value: "**150 Bellos** em 5 dias",
           inline: true
         }
       );
 
       rewardEmbed.setThumbnail(interaction.user.displayAvatarURL({ size: 256 }));
-      
       await interaction.editReply({ embeds: [rewardEmbed] });
-
     } else {
       const cooldownEmbed = createMilitaryEmbed(
         "⏰ RECOMPENSA JÁ RESGATADA",
@@ -783,20 +2030,14 @@ async function handleDiario(interaction, client) {
 // ============================================================
 // 🔥 COMANDO: /streak - VER STREAK E RANKING (MAIS ROBUSTO)
 // ============================================================
-
 async function handleStreak(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
     const { getDailyReward, getStreakRanking } = await import('../firebase.js');
-    
-    // Buscar dados do usuário
     const userReward = await getDailyReward(interaction.user.id);
+    const ranking = await getStreakRanking(5);
     
-    // Buscar ranking
-    const ranking = await getStreakRanking(5); // ✅ Reduzido para 5 para evitar problemas
-    
-    // Criar embed do usuário
     const userEmbed = createMilitaryEmbed(
       "🔥 SEU STREAK DIÁRIO",
       `**${interaction.user.tag}, aqui está seu progresso:**\n\n` +
@@ -810,13 +2051,12 @@ async function handleStreak(interaction, client) {
 
     userEmbed.setThumbnail(interaction.user.displayAvatarURL({ size: 256 }));
 
-    // Adicionar ranking se houver dados
     if (ranking.length > 0) {
       let rankingText = '';
       let position = 1;
       
       for (const userData of ranking) {
-        if (position > 5) break; // Limitar a 5 posições
+        if (position > 5) break;
         
         const medal = getPositionMedal(position);
         
@@ -844,7 +2084,6 @@ async function handleStreak(interaction, client) {
       });
     }
 
-    // Informações do sistema
     userEmbed.addFields(
       {
         name: "💰 SISTEMA DE RECOMPENSAS",
@@ -863,7 +2102,6 @@ async function handleStreak(interaction, client) {
   } catch (error) {
     console.error("Erro no comando streak:", error);
     
-    // Embed de erro mais específico
     const errorEmbed = createMilitaryEmbed(
       "❌ ERRO AO BUSCAR STREAK",
       `**Ocorreu um erro ao buscar suas informações:**\n\n` +
@@ -876,7 +2114,6 @@ async function handleStreak(interaction, client) {
   }
 }
 
-// Comando checkin atualizado
 async function handleCheckin(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
@@ -888,7 +2125,6 @@ async function handleCheckin(interaction, client) {
     const canClaim = !userReward.lastClaim || 
       new Date(userReward.lastClaim.seconds * 1000).toDateString() !== now.toDateString();
 
-    // ✅ CORREÇÃO: 100 Bellos em vez de 1000
     const nextReward = 100 + Math.min(userReward.streak * 10, 50);
 
     const statusEmbed = createMilitaryEmbed(
@@ -917,7 +2153,6 @@ async function handleCheckin(interaction, client) {
 // ============================================================
 // 🎯 FUNÇÕES AUXILIARES
 // ============================================================
-
 function getStreakEmoji(streak) {
   if (streak >= 30) return "🏆";
   if (streak >= 15) return "🔥";
@@ -938,7 +2173,6 @@ function getPositionMedal(position) {
 // ============================================================
 // 🗑️ COMANDO: /removeitem (ADMIN) - CORRIGIDO
 // ============================================================
-
 async function handleRemoveItem(interaction, client) {
   if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
     const deniedEmbed = createMilitaryEmbed(
@@ -955,7 +2189,6 @@ async function handleRemoveItem(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    // Verificar confirmação
     if (confirmacao !== "CONFIRMAR") {
       const errorEmbed = createMilitaryEmbed(
         "❌ CONFIRMAÇÃO NECESSÁRIA",
@@ -966,10 +2199,7 @@ async function handleRemoveItem(interaction, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // Importar funções do Firebase
     const { getItem, deleteCatalogItem } = await import('../firebase.js');
-    
-    // Buscar item para verificar se existe
     const item = await getItem(itemId);
     
     if (!item) {
@@ -981,7 +2211,6 @@ async function handleRemoveItem(interaction, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // Deletar o item usando a função do Firebase
     await deleteCatalogItem(itemId);
 
     const successEmbed = createMilitaryEmbed(
@@ -999,7 +2228,6 @@ async function handleRemoveItem(interaction, client) {
 
     await interaction.editReply({ embeds: [successEmbed] });
 
-    // Log da remoção
     try {
       const logChannel = interaction.guild.channels.cache.find(channel => 
         channel.name.toLowerCase().includes("logs") || 
@@ -1041,7 +2269,6 @@ async function handleRemoveItem(interaction, client) {
 // ============================================================
 // ➕ COMANDO: /additem (ADMIN) - ATUALIZADO COM CUPONS
 // ============================================================
-
 async function handleAddItem(interaction, client) {
   if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
     const deniedEmbed = createMilitaryEmbed(
@@ -1067,7 +2294,6 @@ async function handleAddItem(interaction, client) {
   try {
     const { addCatalogItem } = await import('../firebase.js');
     
-    // Preparar dados do item
     const itemData = {
       name: nome,
       description: descricao,
@@ -1079,7 +2305,6 @@ async function handleAddItem(interaction, client) {
       discountCoupons: []
     };
 
-    // Adicionar cupom se fornecido
     if (cupomNome && cupomDescricao && cupomDesconto) {
       itemData.discountCoupons.push({
         code: cupomNome.toUpperCase(),
@@ -1091,7 +2316,6 @@ async function handleAddItem(interaction, client) {
 
     const itemId = await addCatalogItem(itemData);
 
-    // Construir mensagem de sucesso
     let successMessage = `**Novo item adicionado ao catálogo com sucesso!**\n\n` +
       `🛍️ **Nome:** ${emoji} ${nome}\n` +
       `📄 **Descrição:** ${descricao}\n` +
@@ -1100,7 +2324,6 @@ async function handleAddItem(interaction, client) {
       `📦 **Categoria:** ${getCategoryName(categoria)}\n` +
       `🆔 **ID do item:** ${itemId}\n`;
 
-    // Adicionar informações do cupom se existir
     if (cupomNome && cupomDescricao && cupomDesconto) {
       successMessage += `\n🎫 **Cupom adicionado:**\n` +
         `• **Código:** ${cupomNome.toUpperCase()}\n` +
@@ -1133,7 +2356,6 @@ async function handleAddItem(interaction, client) {
 // ============================================================
 // 🔍 COMANDO: /iditem (BUSCAR ITEM POR NOME)
 // ============================================================
-
 async function handleIdItem(interaction, client) {
   if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
     const deniedEmbed = createMilitaryEmbed(
@@ -1149,16 +2371,13 @@ async function handleIdItem(interaction, client) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    // Buscar todos os itens
     const items = await getCatalogItems();
     
-    // Buscar item pelo nome (case insensitive e parcial)
     const item = items.find(item => 
       item.name.toLowerCase().includes(nomeItem.toLowerCase())
     );
     
     if (!item) {
-      // Se não encontrar exatamente, tentar busca mais ampla
       const similarItems = items.filter(item => 
         item.name.toLowerCase().includes(nomeItem.toLowerCase()) ||
         item.description.toLowerCase().includes(nomeItem.toLowerCase())
@@ -1176,11 +2395,9 @@ async function handleIdItem(interaction, client) {
         );
         return interaction.editReply({ embeds: [errorEmbed] });
       } else if (similarItems.length === 1) {
-        // Se encontrou apenas um item similar, usar esse
         const foundItem = similarItems[0];
         await sendItemInfo(interaction, foundItem);
       } else {
-        // Se encontrou múltiplos itens, mostrar lista
         const itemsList = similarItems.map(item => 
           `• ${item.image} **${item.name}** (ID: \`${item.id}\`)`
         ).join('\n');
@@ -1194,7 +2411,6 @@ async function handleIdItem(interaction, client) {
         return interaction.editReply({ embeds: [multipleEmbed] });
       }
     } else {
-      // Item encontrado exatamente
       await sendItemInfo(interaction, item);
     }
 
@@ -1209,9 +2425,7 @@ async function handleIdItem(interaction, client) {
   }
 }
 
-// Função auxiliar para enviar informações do item
 async function sendItemInfo(interaction, item) {
-  // Formatar informações do item com DESTAQUE para o ID
   const itemInfo = `**🔍 Informações detalhadas do item:**\n\n` +
     `🎯 **ITEM ENCONTRADO:** ${item.image} **${item.name}**\n\n` +
     `🆔 **ID DO ITEM (PRINCIPAL):** \`\`\`${item.id}\`\`\`\n` +
@@ -1223,7 +2437,6 @@ async function sendItemInfo(interaction, item) {
     `📅 **Criado em:** <t:${Math.floor(new Date(item.createdAt).getTime() / 1000)}:F>\n` +
     `✏️ **Atualizado em:** ${item.updatedAt ? `<t:${Math.floor(new Date(item.updatedAt).getTime() / 1000)}:F>` : 'Nunca'}`;
 
-  // Adicionar informações de cupons
   let cuponsInfo = "";
   if (item.discountCoupons && item.discountCoupons.length > 0) {
     cuponsInfo = `\n\n🎫 **Cupons de desconto:**\n` +
@@ -1240,7 +2453,6 @@ async function sendItemInfo(interaction, item) {
     0x2ecc71
   );
 
-  // Adicionar campo destacado com o ID
   infoEmbed.addFields({
     name: "📋 ID PARA USAR EM COMANDOS:",
     value: `\`\`\`${item.id}\`\`\``,
@@ -1252,19 +2464,14 @@ async function sendItemInfo(interaction, item) {
   });
 }
 
-// catalog.js - Adicione estas funções
-
 // ============================================================
 // 🗑️ HANDLER DO BOTÃO REMOVER ITEM
 // ============================================================
-
 async function handleRemoveItemButton(interaction, itemId, client) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
     const { getItem, deleteCatalogItem } = await import('../firebase.js');
-    
-    // Buscar item para verificar se existe
     const item = await getItem(itemId);
     
     if (!item) {
@@ -1276,7 +2483,6 @@ async function handleRemoveItemButton(interaction, itemId, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // Criar embed de confirmação
     const confirmEmbed = createMilitaryEmbed(
       "🗑️ CONFIRMAR REMOÇÃO",
       `**Tem certeza que deseja remover este item?**\n\n` +
@@ -1290,7 +2496,6 @@ async function handleRemoveItemButton(interaction, itemId, client) {
       0xe74c3c
     );
 
-    // Botões de confirmação
     const confirmRow = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
@@ -1322,14 +2527,11 @@ async function handleRemoveItemButton(interaction, itemId, client) {
 // ============================================================
 // ✏️ HANDLER DO BOTÃO EDITAR ITEM
 // ============================================================
-
 async function handleEditItemButton(interaction, itemId, client) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
     const { getItem } = await import('../firebase.js');
-    
-    // Buscar item
     const item = await getItem(itemId);
     
     if (!item) {
@@ -1341,12 +2543,10 @@ async function handleEditItemButton(interaction, itemId, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // Criar modal para edição
     const modal = new ModalBuilder()
       .setCustomId(`edit_item_modal_${itemId}`)
       .setTitle(`✏️ Editar: ${item.name}`);
 
-    // Campo para nome
     const nameInput = new TextInputBuilder()
       .setCustomId('item_name')
       .setLabel("📝 Nome do item")
@@ -1355,7 +2555,6 @@ async function handleEditItemButton(interaction, itemId, client) {
       .setValue(item.name)
       .setMaxLength(100);
 
-    // Campo para descrição
     const descInput = new TextInputBuilder()
       .setCustomId('item_description')
       .setLabel("📄 Descrição do item")
@@ -1364,7 +2563,6 @@ async function handleEditItemButton(interaction, itemId, client) {
       .setValue(item.description)
       .setMaxLength(500);
 
-    // Campo para preço em Bellos
     const coinsInput = new TextInputBuilder()
       .setCustomId('item_coin_price')
       .setLabel("💰 Preço em Bellos")
@@ -1373,7 +2571,6 @@ async function handleEditItemButton(interaction, itemId, client) {
       .setValue(item.coinPrice.toString())
       .setMaxLength(10);
 
-    // Campo para preço em PIX
     const pixInput = new TextInputBuilder()
       .setCustomId('item_pix_price')
       .setLabel("💵 Preço em PIX")
@@ -1388,9 +2585,7 @@ async function handleEditItemButton(interaction, itemId, client) {
     const fourthRow = new ActionRowBuilder().addComponents(pixInput);
 
     modal.addComponents(firstRow, secondRow, thirdRow, fourthRow);
-
     await interaction.showModal(modal);
-
   } catch (error) {
     console.error("Erro no botão editar item:", error);
     const errorEmbed = createMilitaryEmbed(
@@ -1402,19 +2597,14 @@ async function handleEditItemButton(interaction, itemId, client) {
   }
 }
 
-// catalog.js - Adicione esta função
-
 // ============================================================
 // ✅ HANDLER DE CONFIRMAÇÃO DE REMOÇÃO
 // ============================================================
-
 async function handleConfirmRemoveItem(interaction, itemId, client) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
     const { getItem, deleteCatalogItem } = await import('../firebase.js');
-    
-    // Buscar item para verificar se ainda existe
     const item = await getItem(itemId);
     
     if (!item) {
@@ -1426,7 +2616,6 @@ async function handleConfirmRemoveItem(interaction, itemId, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // Deletar o item
     await deleteCatalogItem(itemId);
 
     const successEmbed = createMilitaryEmbed(
@@ -1460,7 +2649,6 @@ async function handleConfirmRemoveItem(interaction, itemId, client) {
 // ============================================================
 // ✏️ COMANDO: /edititem (ADMIN) - CORRIGIDO
 // ============================================================
-
 async function handleEditItem(interaction, client) {
   if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
     const deniedEmbed = createMilitaryEmbed(
@@ -1494,7 +2682,6 @@ async function handleEditItem(interaction, client) {
     let updateData = {};
     let formattedValue = valor;
 
-    // Converter valores conforme o campo
     switch (campo) {
       case 'coinPrice':
         updateData.coinPrice = parseInt(valor);
@@ -1512,7 +2699,6 @@ async function handleEditItem(interaction, client) {
         updateData[campo] = valor;
     }
 
-    // Usar a função do Firebase para atualizar
     await updateCatalogItem(itemId, updateData);
 
     const successEmbed = createMilitaryEmbed(
@@ -1539,7 +2725,6 @@ async function handleEditItem(interaction, client) {
   }
 }
 
-// Função auxiliar para nome dos campos
 function getFieldName(field) {
   const fields = {
     'name': 'Nome',
@@ -1554,16 +2739,12 @@ function getFieldName(field) {
 // ============================================================
 // 🛍️ COMANDO: /catalogo - AGORA EPHEMERAL
 // ============================================================
-
 async function handleCatalogo(interaction, client) {
-  // VERIFICAR se já foi feito deferUpdate ou deferReply
   if (!interaction.deferred && !interaction.replied) {
-    await interaction.deferReply({ ephemeral: true }); // ← MUDADO para true
+    await interaction.deferReply({ ephemeral: true });
   }
-  // Se já foi deferUpdate, não precisamos fazer nada
 
   try {
-    // Buscar itens do catálogo
     const items = await getCatalogItems();
     
     if (items.length === 0) {
@@ -1578,14 +2759,10 @@ async function handleCatalogo(interaction, client) {
       if (interaction.deferred && !interaction.replied) {
         return interaction.editReply({ embeds: [emptyEmbed] });
       } else {
-        return interaction.reply({ embeds: [emptyEmbed], ephemeral: true }); // ← MUDADO
+        return interaction.reply({ embeds: [emptyEmbed], ephemeral: true }); 
       }
     }
-
-    // Buscar dados do usuário
     const userData = await getUser(interaction.user.id);
-
-    // Criar embed principal do catálogo
     const catalogEmbed = createMilitaryEmbed(
       "🛍️ CATÁLOGO DO BELLINHO",
       `**💎 *Não conta pra ninguém...* 💎**\n\n` +
@@ -1596,7 +2773,6 @@ async function handleCatalogo(interaction, client) {
       0x9b59b6
     );
 
-    // Criar menu de seleção
     const selectOptions = items.map(item => {
       const label = item.name.length > 25 ? item.name.substring(0, 22) + '...' : item.name;
       const description = `${formatPrice(item.coinPrice)} Bellos • R$ ${item.pixPrice.toFixed(2)} PIX`;
@@ -1619,7 +2795,6 @@ async function handleCatalogo(interaction, client) {
     const actionRow = new ActionRowBuilder()
       .addComponents(selectMenu);
 
-    // Botões de ação
     const buttonRow = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
@@ -1632,22 +2807,18 @@ async function handleCatalogo(interaction, client) {
           .setCustomId('catalog_refresh')
       );
 
-    // DIFERENCIAR ENTRE deferReply E reply normal
     if (interaction.deferred && !interaction.replied) {
-      // Caso 1: Já foi feito deferReply ou deferUpdate, usar editReply
       await interaction.editReply({ 
         embeds: [catalogEmbed],
         components: [actionRow, buttonRow]
       });
     } else {
-      // Caso 2: Nada foi feito ainda, usar reply
       await interaction.reply({ 
         embeds: [catalogEmbed],
         components: [actionRow, buttonRow],
-        ephemeral: true // ← MUDADO para true
+        ephemeral: true
       });
     }
-
   } catch (error) {
     console.error("Erro no comando /catalogo:", error);
     const errorEmbed = createMilitaryEmbed(
@@ -1661,7 +2832,7 @@ async function handleCatalogo(interaction, client) {
     } else if (interaction.replied) {
       await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
     } else {
-      await interaction.reply({ embeds: [errorEmbed], ephemeral: true }); // ← MUDADO
+      await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
     }
   }
 }
@@ -1669,10 +2840,8 @@ async function handleCatalogo(interaction, client) {
 // ============================================================
 // 🎯 HANDLER DA SELEÇÃO DE ITENS
 // ============================================================
-
 async function handleItemSelect(interaction, client) {
   try {
-    // VERIFICAR se precisa fazer deferReply
     if (!interaction.deferred && !interaction.replied) {
       await interaction.deferReply({ ephemeral: true });
     }
@@ -1694,10 +2863,7 @@ async function handleItemSelect(interaction, client) {
       }
     }
 
-    // Buscar dados do usuário
     const userData = await getUser(interaction.user.id);
-
-    // Criar embed de detalhes do item
     const itemEmbed = createMilitaryEmbed(
       `🛍️ ${item.image} ${item.name}`,
       `**${item.description}**\n\n` +
@@ -1710,7 +2876,6 @@ async function handleItemSelect(interaction, client) {
       0x3498db
     );
 
-    // Botões de compra
     const purchaseRow = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
@@ -1727,8 +2892,6 @@ async function handleItemSelect(interaction, client) {
           .setStyle(ButtonStyle.Secondary)
           .setCustomId('catalog_back')
       );
-
-    // DIFERENCIAR ENTRE deferReply E reply normal
     if (interaction.deferred && !interaction.replied) {
       await interaction.editReply({ 
         embeds: [itemEmbed],
@@ -1767,7 +2930,6 @@ async function handleCoinPurchase(interaction, client) {
     const userData = await getUser(interaction.user.id);
 
     if (!item) {
-      // Se não for modal, fazer deferReply primeiro
       if (!interaction.deferred && !interaction.replied) {
         await interaction.deferReply({ ephemeral: true });
       }
@@ -1786,7 +2948,6 @@ async function handleCoinPurchase(interaction, client) {
     }
 
     if (userData.coins < item.coinPrice) {
-      // Se não for modal, fazer deferReply primeiro
       if (!interaction.deferred && !interaction.replied) {
         await interaction.deferReply({ ephemeral: true });
       }
@@ -1808,7 +2969,6 @@ async function handleCoinPurchase(interaction, client) {
       }
     }
 
-    // Criar modal para informações do Roblox
     const modal = new ModalBuilder()
       .setCustomId(`purchase_modal_${itemId}_coins`)
       .setTitle(`🛍️ Comprar: ${item.name}`);
@@ -1824,13 +2984,11 @@ async function handleCoinPurchase(interaction, client) {
     const firstActionRow = new ActionRowBuilder().addComponents(robloxInput);
     modal.addComponents(firstActionRow);
 
-    // MOSTRAR MODAL - não pode ter deferReply antes disso
     await interaction.showModal(modal);
 
   } catch (error) {
     console.error("Erro na compra com Bellos:", error);
     
-    // Se ocorrer erro após tentar mostrar modal, responder normalmente
     if (!interaction.deferred && !interaction.replied) {
       await interaction.deferReply({ ephemeral: true });
     }
@@ -1852,9 +3010,6 @@ async function handleCoinPurchase(interaction, client) {
 }
 
 async function handlePixPurchase(interaction, client) {
-  // REMOVIDO: deferReply pois já foi feito no index.js
-  // await interaction.deferReply({ ephemeral: true });
-
   try {
     const itemId = interaction.customId.replace('buy_pix_', '');
     const item = await getItem(itemId);
@@ -1868,7 +3023,6 @@ async function handlePixPurchase(interaction, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // Criar modal para informações do PIX
     const modal = new ModalBuilder()
       .setCustomId(`purchase_modal_${itemId}_pix`)
       .setTitle(`💵 Comprar com PIX: ${item.name}`);
@@ -1910,7 +3064,6 @@ async function handlePixPurchase(interaction, client) {
 // ============================================================
 // 🎫 FUNÇÕES AUXILIARES
 // ============================================================
-
 function formatPrice(price) {
   if (typeof price === 'number') {
     return `${price.toLocaleString('pt-BR')},00`;
@@ -1942,22 +3095,18 @@ function formatDiscountCoupons(coupons) {
 // ============================================================
 // 📝 HANDLER DE MODAL DE COMPRA
 // ============================================================
-
 async function handlePurchaseModal(interaction, client) {
   try {
-    // FAZER deferReply para modals
     if (!interaction.deferred && !interaction.replied) {
       await interaction.deferReply({ ephemeral: true });
     }
 
     const modalId = interaction.customId;
-    console.log('Modal ID:', modalId); // Para debug
+    console.log('Modal ID:', modalId);
     
-    // CORRIGIR: Extrair o itemId corretamente
     const parts = modalId.split('_');
-    console.log('Parts:', parts); // Para debug
+    console.log('Parts:', parts);
     
-    // Encontrar a posição do itemId (entre "modal" e o paymentMethod)
     const modalIndex = parts.indexOf('modal');
     if (modalIndex === -1 || modalIndex + 1 >= parts.length) {
       throw new Error('Formato do modal ID inválido');
@@ -1966,12 +3115,11 @@ async function handlePurchaseModal(interaction, client) {
     const itemId = parts[modalIndex + 1];
     const paymentMethod = parts[modalIndex + 2];
     
-    console.log('Item ID:', itemId, 'Payment Method:', paymentMethod); // Para debug
-
+    console.log('Item ID:', itemId, 'Payment Method:', paymentMethod);
     const item = await getItem(itemId);
     
     if (!item) {
-      console.log('Item não encontrado com ID:', itemId); // Para debug
+      console.log('Item não encontrado com ID:', itemId);
       const errorEmbed = createMilitaryEmbed(
         "❌ ITEM INDISPONÍVEL",
         "**Este item não está mais disponível para compra.**",
@@ -1980,11 +3128,8 @@ async function handlePurchaseModal(interaction, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // Obter valores dos campos de forma segura
     const robloxUsername = interaction.fields.getTextInputValue('roblox_username');
-    
     let discountCoupon = '';
-    // Verificar se o campo discount_coupon existe neste modal
     const hasDiscountField = interaction.fields.fields.some(field => field.customId === 'discount_coupon');
     if (hasDiscountField) {
       discountCoupon = interaction.fields.getTextInputValue('discount_coupon') || '';
@@ -1993,14 +3138,11 @@ async function handlePurchaseModal(interaction, client) {
     console.log('Cupom digitado:', discountCoupon); // DEBUG
     console.log('Cupons disponíveis no item:', item.discountCoupons); // DEBUG
 
-    // Aplicar desconto se cupom válido (apenas para PIX) - CORREÇÃO
     let finalPrice = paymentMethod === 'coins' ? item.coinPrice : item.pixPrice;
     let discountApplied = null;
 
     if (discountCoupon && item.discountCoupons && item.discountCoupons.length > 0 && paymentMethod === 'pix') {
       console.log('Procurando cupom válido...'); // DEBUG
-      
-      // CORREÇÃO: Buscar cupom de forma case-insensitive e trim espaços
       const validCoupon = item.discountCoupons.find(coupon => {
         const couponCode = coupon.code.trim().toUpperCase();
         const inputCode = discountCoupon.trim().toUpperCase();
@@ -2019,10 +3161,8 @@ async function handlePurchaseModal(interaction, client) {
     }
 
     if (paymentMethod === 'coins') {
-      // Processar compra com Bellos
       await processCoinPurchase(interaction, item, robloxUsername, client);
     } else {
-      // Processar compra com PIX
       await processPixPurchase(interaction, item, robloxUsername, finalPrice, discountApplied, client);
     }
 
@@ -2047,13 +3187,11 @@ async function handlePurchaseModal(interaction, client) {
 // ============================================================
 // 🪙 PROCESSAR COMPRA COM BELLOS
 // ============================================================
-
 async function processCoinPurchase(interaction, item, robloxUsername, client) {
   try {
     const { updateUserCoins, createPurchase } = await import('../firebase.js');
     const userData = await getUser(interaction.user.id);
 
-    // Verificar saldo novamente (segurança)
     if (userData.coins < item.coinPrice) {
       const errorEmbed = createMilitaryEmbed(
         "❌ BELLOS INSUFICIENTES",
@@ -2064,10 +3202,7 @@ async function processCoinPurchase(interaction, item, robloxUsername, client) {
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // Deduzir Bellos
     await updateUserCoins(interaction.user.id, -item.coinPrice);
-
-    // Registrar compra
     const purchaseId = await createPurchase({
       userId: interaction.user.id,
       itemId: item.id,
@@ -2078,10 +3213,8 @@ async function processCoinPurchase(interaction, item, robloxUsername, client) {
       status: 'completed'
     });
 
-    // ✅ CORREÇÃO: Passar o purchaseId para a notificação
     await sendPurchaseNotification(interaction, item, robloxUsername, 'coins', item.coinPrice, null, client, purchaseId);
 
-    // Embed de sucesso
     const successEmbed = createMilitaryEmbed(
       "✅ COMPRA REALIZADA COM SUCESSO!",
       `**${interaction.user.tag}, sua compra foi processada!**\n\n` +
@@ -2106,12 +3239,10 @@ async function processCoinPurchase(interaction, item, robloxUsername, client) {
 // ============================================================
 // 💵 PROCESSAR COMPRA COM PIX - MELHORADO
 // ============================================================
-
 async function processPixPurchase(interaction, item, robloxUsername, finalPrice, discountApplied, client) {
   try {
     const { createPurchase } = await import('../firebase.js');
 
-    // Registrar compra pendente
     const purchaseId = await createPurchase({
       userId: interaction.user.id,
       itemId: item.id,
@@ -2125,14 +3256,12 @@ async function processPixPurchase(interaction, item, robloxUsername, finalPrice,
       discountPercent: discountApplied ? discountApplied.discount * 100 : 0
     });
 
-    // CORREÇÃO: Melhorar embed com informações claras do cupom
     let discountInfo = '';
     if (discountApplied) {
       discountInfo = `🎫 **Cupom aplicado:** ${discountApplied.code} (${(discountApplied.discount * 100)}% off)\n` +
                     `💸 **Valor original:** R$ ${item.pixPrice.toFixed(2)}\n` +
                     `💰 **Você economizou:** R$ ${(item.pixPrice - finalPrice).toFixed(2)}\n`;
     } else {
-      // Verificar se o usuário tentou usar um cupom que não existe
       const hasDiscountField = interaction.fields.fields.some(field => field.customId === 'discount_coupon');
       const discountCoupon = hasDiscountField ? interaction.fields.getTextInputValue('discount_coupon') || '' : '';
       
@@ -2144,7 +3273,6 @@ async function processPixPurchase(interaction, item, robloxUsername, finalPrice,
       }
     }
 
-    // Embed com instruções do PIX
     const pixEmbed = createMilitaryEmbed(
       "💵 COMPRA VIA PIX - PAGAMENTO PENDENTE",
       `**${interaction.user.tag}, sua compra foi registrada!**\n\n` +
@@ -2163,8 +3291,6 @@ async function processPixPurchase(interaction, item, robloxUsername, finalPrice,
     );
 
     await interaction.editReply({ embeds: [pixEmbed] });
-
-    // Criar ticket automaticamente
     await createPurchaseTicket(interaction, item, robloxUsername, finalPrice, discountApplied, purchaseId, client);
 
   } catch (error) {
@@ -2176,11 +3302,8 @@ async function processPixPurchase(interaction, item, robloxUsername, finalPrice,
 // ============================================================
 // 🎫 SISTEMA DE NOTIFICAÇÕES - COM BOTÃO ENTREGUE NO CANAL CORRETO
 // ============================================================
-
-// ✅ CORREÇÃO: Adicionar purchaseId como parâmetro opcional
 async function sendPurchaseNotification(interaction, item, robloxUsername, paymentMethod, price, discountApplied, client, purchaseId = null) {
   try {
-    // Buscar canal de compras 🤑│・compras-bello
     const purchaseChannel = interaction.guild.channels.cache.find(channel => 
       channel.name === "🤑│・compras-bello" ||
       channel.name.toLowerCase().includes("compras") ||
@@ -2192,7 +3315,6 @@ async function sendPurchaseNotification(interaction, item, robloxUsername, payme
       return;
     }
 
-    // Apenas adicionar botão "Entregue" para compras com Bellos
     if (paymentMethod === 'coins') {
       const notificationEmbed = createMilitaryEmbed(
         "🪙 NOVA COMPRA COM BELLOS!",
@@ -2223,15 +3345,14 @@ async function sendPurchaseNotification(interaction, item, robloxUsername, payme
         components: [deliverButton]
     });
 
-    // ✅ CORREÇÃO: Aguardar a salvamento e verificar se foi bem sucedido
     const { savePurchaseInfo } = await import('../firebase.js');
     const saveResult = await savePurchaseInfo(message.id, {
         userId: interaction.user.id,
         userTag: interaction.user.tag,
         itemId: item.id,
         itemName: item.name,
-        description: item.description, // ✅ Adicionar descrição
-        image: item.image, // ✅ Adicionar emoji/imagem
+        description: item.description, 
+        image: item.image, 
         robloxUsername: robloxUsername,
         price: price,
         messageId: message.id,
@@ -2248,7 +3369,6 @@ async function sendPurchaseNotification(interaction, item, robloxUsername, payme
     }
 
     } else if (paymentMethod === 'pix') {
-      // Para PIX, notificação normal sem botão
       const pixEmbed = createMilitaryEmbed(
         "💵 NOVA COMPRA VIA PIX!",
         `**📋 AGUARDANDO PAGAMENTO**\n\n` +
@@ -2276,7 +3396,6 @@ async function sendPurchaseNotification(interaction, item, robloxUsername, payme
 
 async function handleDeliverItem(interaction, userId, itemId, timestamp, client) {
   try {
-    // Verificar se é administrador
     if (!interaction.member.permissions.has('Administrator')) {
       const errorEmbed = createMilitaryEmbed(
         "❌ PERMISSÃO NEGADA",
@@ -2286,16 +3405,11 @@ async function handleDeliverItem(interaction, userId, itemId, timestamp, client)
       return interaction.editReply({ embeds: [errorEmbed] });
     }
 
-    // ✅ CORREÇÃO: Importar as funções corretas
     const { markAsDelivered, getPurchaseInfo, getItem } = await import('../firebase.js');
-    
-    // Primeiro tentar buscar pelas informações salvas
     let purchaseInfo = await getPurchaseInfo(interaction.message.id);
     
     if (!purchaseInfo) {
       console.log('❌ Informações da compra não encontradas no Firebase, buscando item...');
-      
-      // Se não encontrar, buscar informações completas do item
       const item = await getItem(itemId);
       if (item) {
         purchaseInfo = {
@@ -2306,12 +3420,10 @@ async function handleDeliverItem(interaction, userId, itemId, timestamp, client)
           image: item.image,
           robloxUsername: 'Não informado no banco de dados',
           price: item.coinPrice,
-          // Tentar extrair informações da mensagem original
           fromMessage: true
         };
         console.log('✅ Informações do item recuperadas:', purchaseInfo);
       } else {
-        // Se não conseguir encontrar o item, usar informações mínimas
         purchaseInfo = {
           userId: userId,
           itemId: itemId,
@@ -2325,7 +3437,6 @@ async function handleDeliverItem(interaction, userId, itemId, timestamp, client)
       console.log('✅ Informações da compra recuperadas do Firebase:', purchaseInfo);
     }
     
-    // Marcar como entregue no banco de dados
     console.log('📝 Marcando compra como entregue...');
     const deliveryResult = await markAsDelivered(interaction.message.id);
     
@@ -2333,11 +3444,9 @@ async function handleDeliverItem(interaction, userId, itemId, timestamp, client)
       console.log('⚠️ Aviso: Não foi possível marcar como entregue no Firebase, mas continuando...');
     }
 
-    // Buscar usuário pelo ID
     const user = await client.users.fetch(userId);
     console.log('👤 Usuário encontrado:', user.tag);
     
-    // Buscar canal 🎮│・bello para enviar a mensagem de entrega
     const belloChannel = interaction.guild.channels.cache.find(channel => 
       channel.name === "🎮│・bello" ||
       channel.name.toLowerCase().includes("bello") ||
@@ -2346,8 +3455,6 @@ async function handleDeliverItem(interaction, userId, itemId, timestamp, client)
 
     if (belloChannel) {
       console.log('📢 Enviando notificação no canal bello...');
-      
-      // Enviar mensagem de entrega concluída no canal 🎮│・bello
       const deliveryEmbed = createMilitaryEmbed(
         "🎉 ENTREGA CONCLUÍDA!",
         `**✅ ITEM ENTREGUE COM SUCESSO!**\n\n` +
@@ -2397,13 +3504,10 @@ async function handleDeliverItem(interaction, userId, itemId, timestamp, client)
       console.log('❌ Canal bello não encontrado');
     }
 
-    // ✅ CORREÇÃO: Lidar com o embed de forma segura
     let embedsToEdit = [];
     
     if (interaction.message.embeds && interaction.message.embeds.length > 0) {
       const originalEmbed = interaction.message.embeds[0];
-      
-      // Criar um novo embed baseado no original
       const updatedEmbed = createMilitaryEmbed(
         originalEmbed.title || "🪙 COMPRA ENTREGUE!",
         originalEmbed.description ? 
@@ -2412,12 +3516,11 @@ async function handleDeliverItem(interaction, userId, itemId, timestamp, client)
             .replace('COMPRA CONCLUÍDA - AGUARDANDO ENTREGA', '✅ **ENTREGUE**')
             .replace('Aguardando entrega', '✅ **ENTREGUE**') :
           `**✅ ITEM ENTREGUE COM SUCESSO!**\n\n🛍️ **Item:** ${purchaseInfo.itemName}\n👤 **Cliente:** ${user.tag}`,
-        0x2ecc71 // Verde para entregue
+        0x2ecc71
       );
 
       embedsToEdit = [updatedEmbed];
     } else {
-      // Se não houver embed, criar um simples
       const simpleEmbed = createMilitaryEmbed(
         "✅ ENTREGA CONCLUÍDA",
         `**Item marcado como entregue com sucesso!**\n\n` +
@@ -2429,11 +3532,10 @@ async function handleDeliverItem(interaction, userId, itemId, timestamp, client)
       embedsToEdit = [simpleEmbed];
     }
 
-    // Atualizar a mensagem original
     console.log('✏️ Atualizando mensagem original...');
     await interaction.message.edit({
       embeds: embedsToEdit,
-      components: [] // Remove o botão
+      components: [] 
     });
     console.log('✅ Mensagem original atualizada');
 
@@ -2452,7 +3554,6 @@ async function handleDeliverItem(interaction, userId, itemId, timestamp, client)
     await interaction.editReply({ embeds: [successEmbed] });
     console.log('✅ Resposta de confirmação enviada');
 
-    // Tentar enviar DM para o usuário
     try {
       const dmEmbed = createMilitaryEmbed(
         "🎉 SEU ITEM FOI ENTREGUE!",
@@ -2491,19 +3592,16 @@ async function handleDeliverItem(interaction, userId, itemId, timestamp, client)
 // ============================================================
 // 🎫 SISTEMA DE TICKETS PIX
 // ============================================================
-
 async function createPurchaseTicket(interaction, item, robloxUsername, finalPrice, discountApplied, purchaseId, client) {
   try {
-    // Buscar categoria de tickets
     const guild = interaction.guild;
     const ticketCategory = guild.channels.cache.find(channel => 
       channel.type === 4 && (channel.name.toLowerCase().includes('ticket') || channel.name.toLowerCase().includes('compras'))
     );
 
-    // Criar canal do ticket
     const ticketChannel = await guild.channels.create({
       name: `pix-${interaction.user.username}-${Date.now().toString(36)}`,
-      type: 0, // TEXT_CHANNEL
+      type: 0,
       parent: ticketCategory?.id,
       permissionOverwrites: [
         {
@@ -2521,7 +3619,6 @@ async function createPurchaseTicket(interaction, item, robloxUsername, finalPric
       ]
     });
 
-    // Embed do ticket
     const ticketEmbed = createMilitaryEmbed(
      "💵 PAGAMENTO VIA PIX - TICKET DE COMPRA",
     `**Olá ${interaction.user.tag}!**\n\n` +
@@ -2549,7 +3646,6 @@ async function createPurchaseTicket(interaction, item, robloxUsername, finalPric
       0x9B59B6
     );
 
-    // Botão para fechar ticket
     const closeButton = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
@@ -2564,7 +3660,6 @@ async function createPurchaseTicket(interaction, item, robloxUsername, finalPric
       components: [closeButton]
     });
 
-    // Notificar usuário
     await interaction.followUp({ 
       content: `🎫 **Ticket criado!** Acesse: ${ticketChannel}`,
       ephemeral: true 
@@ -2582,12 +3677,8 @@ async function createPurchaseTicket(interaction, item, robloxUsername, finalPric
 // ============================================================
 // 🔄 HANDLERS DE BOTÕES DO CATÁLOGO
 // ============================================================
-
-// ALTERNATIVA SIMPLES - catalog.js
 async function handleCatalogRefresh(interaction, client) {
   try {
-    // Não fazer deferUpdate aqui, pois já foi feito no index.js
-    // Apenas chamar handleCatalogo que vai detectar o estado da interação
     await handleCatalogo(interaction, client);
   } catch (error) {
     console.error("Erro ao atualizar catálogo:", error);
@@ -2597,14 +3688,12 @@ async function handleCatalogRefresh(interaction, client) {
       0xe74c3c
     );
     
-    // Usar followUp pois a interação já foi deferida
     await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
   }
 }
 
 async function handleCatalogBack(interaction, client) {
   try {
-    // Não fazer deferUpdate aqui, pois já foi feito no index.js
     await handleCatalogo(interaction, client);
   } catch (error) {
     console.error("Erro ao voltar ao catálogo:", error);
@@ -2618,13 +3707,7 @@ async function handleCatalogBack(interaction, client) {
   }
 }
 
-
-
-// catalog.js - CORREÇÃO
 async function handleCatalogCheckCoins(interaction, client) {
-  // REMOVA ESTA LINHA:
-  // await interaction.deferReply({ ephemeral: true });
-  
   try {
     const userData = await getUser(interaction.user.id);
     
@@ -2638,7 +3721,6 @@ async function handleCatalogCheckCoins(interaction, client) {
       0xF1C40F
     );
 
-    // Use editReply pois já foi feito deferReply no index.js
     await interaction.editReply({ embeds: [coinsEmbed] });
     
   } catch (error) {
@@ -2652,7 +3734,6 @@ async function handleCatalogCheckCoins(interaction, client) {
   }
 }
 
-// Função de autocomplete para nomes de itens
 export async function autocomplete(interaction, client) {
   const focusedOption = interaction.options.getFocused(true);
   
@@ -2667,7 +3748,7 @@ export async function autocomplete(interaction, client) {
           item.description.toLowerCase().includes(searchTerm) ||
           item.category.toLowerCase().includes(searchTerm)
         )
-        .slice(0, 25); // Limite do Discord
+        .slice(0, 25);
       
       await interaction.respond(
         filtered.map(item => ({
@@ -2696,5 +3777,12 @@ export const catalogHandlers = {
   handleDeliverItem,
   handleConfirmLootbox,  
   handleMeusCodigos,     
-  handleEstatisticasLootbox 
+  handleEstatisticasLootbox,
+   handleAcceptMarriage,    
+  handleRejectMarriage,    
+  handleConfirmDivorce,    
+  handleCancelDivorce,
+  handleAdminConfirmRemoveCooldown,
+  handleAdminCancelRemoveCooldown,
+  handleAdminForceClear
 };
