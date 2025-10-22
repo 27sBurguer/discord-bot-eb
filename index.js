@@ -10,6 +10,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  MessageFlags
 } from "discord.js";
 import http from 'http';
 import fetch from 'node-fetch';
@@ -18,7 +19,10 @@ import fetch from 'node-fetch';
 import * as militaryCommands from './commands/military.js';
 import * as utilityCommands from './commands/utility.js';
 import * as adminCommands from './commands/admin.js';
-import * as eventCommands from './commands/events.js'; // ✅ NOVO
+import * as eventCommands from './commands/events.js';
+import * as economyCommands from './commands/economy.js'; // ✅ NOVO
+import * as catalogCommands from './commands/catalog.js'; // ✅ NOVO
+import { handleVideoChannelMessage } from './commands/videoMonitor.js';
 
 // Importar utils
 import { createMilitaryEmbed } from './utils/embeds.js';
@@ -46,6 +50,12 @@ discordBot.commands = new Collection();
 
 const SERVER_URL = process.env.SERVER_URL;
 const CLIENT_ID = process.env.CLIENT_ID;
+
+// No client.on('messageCreate'), adicione:
+discordBot.on('messageCreate', async (message) => {
+  // Monitoramento do canal de vídeos
+  await handleVideoChannelMessage(message, discordBot);
+});
 
 // ============================================================
 // 🗃️ Armazenamento Global
@@ -90,7 +100,9 @@ const allCommands = [
   ...militaryCommands.commands,
   ...utilityCommands.commands,
   ...adminCommands.commands,
-  ...eventCommands.commands // ✅ NOVO
+  ...eventCommands.commands, // ✅ NOVO
+  ...economyCommands.commands, // ✅ NOVO
+  ...catalogCommands.commands // ✅ NOVO
 ];
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
@@ -110,6 +122,22 @@ async function registerCommandsForGuild(guildId) {
 }
 
 // Adicionar comandos à Collection
+catalogCommands.commands.forEach(cmd => 
+  discordBot.commands.set(cmd.name, { 
+    category: 'catalog',
+    execute: catalogCommands.execute,
+    data: cmd 
+  })
+);
+
+economyCommands.commands.forEach(cmd => 
+  discordBot.commands.set(cmd.name, { 
+    category: 'economy',
+    execute: economyCommands.execute,
+    data: cmd 
+  })
+);
+
 militaryCommands.commands.forEach(cmd => 
   discordBot.commands.set(cmd.name, { 
     category: 'military',
@@ -149,6 +177,41 @@ discordBot.once("ready", async () => {
   console.log(`🔗 Conectado em ${discordBot.guilds.cache.size} servidores`);
 
   eventCommands.initializeEventSystem(discordBot);
+
+  // ✅ INICIALIZAR CATÁLOGO
+  try {
+    const { initializeCatalog } = await import('./firebase.js');
+    await initializeCatalog();
+  } catch (error) {
+    console.error('❌ Erro ao inicializar catálogo:', error);
+  }
+
+  // ✅ INICIALIZAR CACHE DE CONVITES
+  try {
+    console.log('🔍 Inicializando cache de convites...');
+    const guilds = discordBot.guilds.cache;
+    
+    for (const [guildId, guild] of guilds) {
+      const invites = await guild.invites.fetch();
+      discordBot.inviteCache = new Map();
+      
+      invites.forEach(invite => {
+        discordBot.inviteCache.set(invite.code, invite.uses);
+      });
+      
+      console.log(`✅ Cache de convites inicializado para: ${guild.name} (${invites.size} convites)`);
+    }
+  } catch (error) {
+    console.error('❌ Erro ao inicializar cache de convites:', error);
+  }
+
+  // ✅ TESTAR CONEXÃO COM FIREBASE
+  try {
+    const { testFirebaseConnection } = await import('./firebase.js');
+    await testFirebaseConnection();
+  } catch (error) {
+    console.error('❌ Erro ao carregar Firebase:', error);
+  }
   
   // Registrar comandos em todos os servidores atuais
   console.log('🌍 Registrando comandos em todos os servidores...');
@@ -267,14 +330,131 @@ discordBot.on("interactionCreate", async (interaction) => {
   
   // Se for uma interação de botão
   if (interaction.isButton()) {
-    await interaction.deferReply({ ephemeral: true });
-    
     const buttonId = interaction.customId;
+
+    // ✅ BOTÃO CLOSE_TICKET (não precisa de deferReply)
+    if (buttonId === 'close_ticket') {
+      if (interaction.channel.name.startsWith('pix-')) {
+        await interaction.channel.delete();
+      }
+      return;
+    }
+
+    // ✅ BOTÕES QUE MOSTRAM MODALS (não podem ter deferReply)
+    const modalButtons = ['buy_coins_', 'buy_pix_'];
+    const showsModal = modalButtons.some(prefix => buttonId.startsWith(prefix));
+    
+    if (showsModal) {
+      // NÃO FAZER deferReply para botões que mostram modals
+      if (buttonId.startsWith('buy_coins_')) {
+        const { catalogHandlers } = await import('./commands/catalog.js');
+        await catalogHandlers.handleCoinPurchase(interaction, discordBot);
+        return;
+      }
+      
+      if (buttonId.startsWith('buy_pix_')) {
+        const { catalogHandlers } = await import('./commands/catalog.js');
+        await catalogHandlers.handlePixPurchase(interaction, discordBot);
+        return;
+      }
+    }
+    
+    // No interactionCreate, atualize a parte dos botões da lootbox:
+    if (buttonId === 'confirm_lootbox') {
+      // Já tem deferReply no handler, então está correto
+      const { catalogHandlers } = await import('./commands/catalog.js');
+      await catalogHandlers.handleConfirmLootbox(interaction, discordBot);
+      return;
+    }
+
+    if (buttonId === 'cancel_lootbox') {
+      // ✅ ADICIONE deferReply para o botão de cancelar
+      await interaction.deferReply({ ephemeral: true });
+      
+      const cancelEmbed = createMilitaryEmbed(
+        "❌ COMPRA CANCELADA",
+        "**Compra da lootbox cancelada.**\n\nVocê pode comprar uma lootbox a qualquer momento usando `/lootbox`.",
+        0x95A5A6
+      );
+      await interaction.editReply({ 
+        embeds: [cancelEmbed],
+        components: [] 
+      });
+      return;
+    }
+
+    // ✅ BOTÕES QUE PRECISAM DE deferUpdate (atualizam a mensagem)
+    const updateButtons = ['catalog_refresh', 'catalog_back'];
+    
+    if (updateButtons.includes(buttonId)) {
+      await interaction.deferUpdate();
+      
+      if (buttonId === 'catalog_refresh') {
+        const { catalogHandlers } = await import('./commands/catalog.js');
+        await catalogHandlers.handleCatalogRefresh(interaction, discordBot);
+        return;
+      }
+      
+      if (buttonId === 'catalog_back') {
+        const { catalogHandlers } = await import('./commands/catalog.js');
+        await catalogHandlers.handleCatalogBack(interaction, discordBot);
+        return;
+      }
+    }
+
+    // ✅ BOTÃO ENTREGUE ITEM - PRECISA DE deferReply ESPECÍFICO
+    if (buttonId.startsWith('deliver_item_')) {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+      
+      const parts = buttonId.replace('deliver_item_', '').split('_');
+      if (parts.length >= 3) {
+        const userId = parts[0];
+        const itemId = parts[1];
+        const timestamp = parts[2];
+        
+        const { catalogHandlers } = await import('./commands/catalog.js');
+        await catalogHandlers.handleDeliverItem(interaction, userId, itemId, timestamp, discordBot);
+      } else {
+        const errorEmbed = createMilitaryEmbed(
+          "❌ ERRO NO BOTÃO",
+          "**Formato do botão inválido.**\n\nContate um administrador.",
+          0xe74c3c
+        );
+        await interaction.editReply({ embeds: [errorEmbed] });
+      }
+      return;
+    }
+
+    // ✅ BOTÕES QUE PRECISAM DE deferReply (resposta ephemeral normal)
+    // ADICIONE ESTA VERIFICAÇÃO PARA EVITAR DUPLO DEFER
+    if (!interaction.deferred && !interaction.replied) {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    }
+
+    if (buttonId === 'cancel_remove') {
+      const cancelEmbed = createMilitaryEmbed(
+        "❌ REMOÇÃO CANCELADA",
+        "**A remoção do item foi cancelada.**\n\nO item permanece no catálogo.",
+        0x95a5a6
+      );
+      await interaction.editReply({ 
+        embeds: [cancelEmbed],
+        components: []
+      });
+      return;
+    }
+    
+    // Restante dos botões...
+    if (buttonId === 'catalog_check_coins') {
+      const { catalogHandlers } = await import('./commands/catalog.js');
+      await catalogHandlers.handleCatalogCheckCoins(interaction, discordBot);
+      return;
+    }
     
     switch (buttonId) {
       case 'manual_instructions':
         const manualEmbed = createMilitaryEmbed(
-          "📚 MANUAL DE INSTRUÇões",
+          "📚 MANUAL DE INSTRUÇÕES",
           "**Guia completo para verificação de conta militar**\n\nSiga os passos abaixo para se integrar às forças armadas:"
         );
 
@@ -356,6 +536,15 @@ discordBot.on("interactionCreate", async (interaction) => {
         });
         break;
 
+      // ✅ NOVOS BOTÕES DO SISTEMA DE CONVITES
+      case 'create_invite':
+        await handleCreateInvite(interaction);
+        break;
+        
+      case 'check_coins':
+        await handleCheckCoins(interaction);
+        break;
+
       default:
         const unknownEmbed = createMilitaryEmbed(
           "❌ BOTÃO DESCONHECIDO",
@@ -369,7 +558,318 @@ discordBot.on("interactionCreate", async (interaction) => {
         break;
     }
   }
+
+  // ✅ NOVO: Se for um menu de seleção (StringSelectMenu)
+  if (interaction.isStringSelectMenu()) {
+    if (interaction.customId === 'select_item') {
+      // ADICIONE ESTA LINHA: deferReply para menus de seleção
+      await interaction.deferReply({ ephemeral: true });
+      
+      const { catalogHandlers } = await import('./commands/catalog.js');
+      await catalogHandlers.handleItemSelect(interaction, discordBot);
+      return;
+    }
+  }
+
+  // ✅ NOVO: Se for um modal (formulário)
+  if (interaction.isModalSubmit()) {
+    if (interaction.customId.startsWith('purchase_modal_')) {
+      const { catalogHandlers } = await import('./commands/catalog.js');
+      await catalogHandlers.handlePurchaseModal(interaction, discordBot);
+      return;
+    }
+  }
 });
+
+// ============================================================
+// 🎉 SISTEMA DE ANÚNCIO DE CONVITES
+// ============================================================
+
+async function sendInviteAnnouncement(guild, inviter, invited, client) {
+  try {
+    // Buscar o canal "🎮│・bello"
+    const belloChannel = guild.channels.cache.find(channel => 
+      channel.name === "🎮│・bello" ||
+      channel.name.toLowerCase().includes("bello") ||
+      channel.name.toLowerCase().includes("🎮")
+    );
+    
+    if (!belloChannel) {
+      console.log(`❌ Canal "🎮│・bello" não encontrado`);
+      return;
+    }
+    
+    // Verificar permissões
+    if (!belloChannel.permissionsFor(client.user).has(['SendMessages', 'ViewChannel', 'EmbedLinks'])) {
+      console.log(`❌ Sem permissões no canal ${belloChannel.name}`);
+      return;
+    }
+    
+    // Buscar dados atualizados do convidador
+    const { getUser } = await import('./firebase.js');
+    const inviterData = await getUser(inviter.id);
+    
+    // Criar embed militar super bonito
+    const announcementEmbed = createMilitaryEmbed(
+      "🎖️ NOVO RECRUTA CONVOCADO!",
+      `**${inviter.tag} ACABA DE TRAZER UM NOVO SOLDADO PARA AS FILEIRAS!**\n\n` +
+      `🎯 **Recruta Convocado:** ${invited.tag}\n` +
+      `⚔️ **Responsável pelo Alistamento:** ${inviter.tag}\n` +
+      `💰 **Recompensa por Serviço:** 100 Bellos\n` +
+      `🎖️ **Total de Recrutas:** ${inviterData.invites + 1} soldados\n\n` +
+      `📊 **Patrimônio Militar:** ${inviterData.coins.toLocaleString('pt-BR')} Bellos\n` +
+      `🏅 **Grau de Influência:** ${getMilitaryRank(inviterData.invites + 1)}\n\n` +
+      `🪖 **"Um soldado convocado é uma vitória garantida!"**`,
+      0xFFD700 // Dourado
+    );
+    
+    // Adicionar campos especiais
+    announcementEmbed.addFields(
+      {
+        name: "🎯 MISSÃO CUMPRIDA",
+        value: "✅ Recrutamento bem-sucedido\n✅ Reforços adquiridos\n✅ Recompensa distribuída",
+        inline: true
+      },
+      {
+        name: "📈 PROGRESSO MILITAR",
+        value: `🪙 **Bellos:** ${inviterData.coins.toLocaleString('pt-BR')}\n👥 **Recrutas:** ${inviterData.invites + 1}\n⏰ **Serviço:** ${Math.floor(inviterData.totalTime / 60)}h`,
+        inline: true
+      },
+      {
+        name: "🎖️ PRÓXIMO OBJETIVO",
+        value: getNextObjective(inviterData.invites + 1),
+        inline: false
+      }
+    );
+    
+    // Configurar thumbnail e footer
+    announcementEmbed.setThumbnail(inviter.displayAvatarURL({ size: 256 }));
+    announcementEmbed.setImage('https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDA0eGxxcjJvcGJoNzZzbHBwNXl5emdjaW1xZmJhbTBnaGQ1dzZ2ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/QoPwvuCp9PRjmS8SEA/giphy.gif'); // GIF militar
+    
+    announcementEmbed.setFooter({ 
+      text: `Sistema de Recrutamento Bellinho • ${new Date().toLocaleDateString('pt-BR')}`,
+      iconURL: client.user.displayAvatarURL()
+    });
+    
+    // Criar botão de ação
+    const actionRow = new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+          .setLabel('🎖️ Quero Recrutar Também!')
+          .setStyle(ButtonStyle.Success)
+          .setCustomId('create_invite'),
+        new ButtonBuilder()
+          .setLabel('💰 Ver Meus Bellos')
+          .setStyle(ButtonStyle.Primary)
+          .setCustomId('check_coins')
+      );
+    
+    // Enviar a mensagem
+    await belloChannel.send({ 
+      content: `🎉 **PARABÉNS ${inviter}!** 🎉`,
+      embeds: [announcementEmbed],
+      components: [actionRow]
+    });
+    
+    console.log(`✅ Anúncio de convite enviado no canal: ${belloChannel.name}`);
+    
+  } catch (error) {
+    console.error(`❌ Erro ao enviar anúncio de convite:`, error);
+  }
+}
+
+// ============================================================
+// 🎖️ FUNÇÕES AUXILIARES MILITARES
+// ============================================================
+
+/**
+ * Retorna o rank militar baseado no número de convites
+ */
+function getMilitaryRank(invites) {
+  if (invites >= 20) return "🏅 **General de Recrutamento**";
+  if (invites >= 15) return "⭐ **Coronel Convocador**";
+  if (invites >= 10) return "🎖️ **Major de Tropas**";
+  if (invites >= 5) return "⚔️ **Capitão Recrutador**";
+  if (invites >= 3) return "🔰 **Sargento Convocador**";
+  if (invites >= 1) return "🎯 **Cabo de Recrutas**";
+  return "🪖 **Soldado Iniciante**";
+}
+
+/**
+ * Retorna o próximo objetivo do usuário
+ */
+function getNextObjective(currentInvites) {
+  const objectives = [
+    { target: 1, reward: "🎖️ Primeiro recruta - 100 Bellos" },
+    { target: 3, reward: "⚔️ 3 recrutas - Patente de Sargento" },
+    { target: 5, reward: "🎖️ 5 recrutas - Patente de Capitão" },
+    { target: 10, reward: "⭐ 10 recrutas - Patente de Major" },
+    { target: 15, reward: "🏅 15 recrutas - Patente de Coronel" },
+    { target: 20, reward: "🎯 20 recrutas - Patente de General" }
+  ];
+  
+  for (const objective of objectives) {
+    if (currentInvites < objective.target) {
+      return `**Próxima conquista:** ${objective.target} recrutas\n**Recompensa:** ${objective.reward}`;
+    }
+  }
+  
+  return "**🎖️ MISSÃO CUMPLIDA!** Você alcançou todas as patentes!";
+}
+
+// ============================================================
+// 🎯 HANDLERS DOS BOTÕES DO ANÚNCIO
+// ============================================================
+
+async function handleCreateInvite(interaction) {
+  try {
+    // Criar um convite temporário
+    const invite = await interaction.channel.createInvite({
+      maxAge: 86400, // 24 horas
+      maxUses: 1,
+      unique: true,
+      reason: `Convite criado por ${interaction.user.tag} via botão do anúncio`
+    });
+    
+    const inviteEmbed = createMilitaryEmbed(
+      "🎖️ CONVITE DE RECRUTAMENTO CRIADO!",
+      `**Aqui está seu convite especial para recrutamento:**\n\n` +
+      `🔗 **Link do Convite:** ${invite.url}\n` +
+      `⏰ **Validade:** 24 horas\n` +
+      `👥 **Usos Máximos:** 1 pessoa\n` +
+      `💰 **Recompensa:** 100 Bellos por recruta\n\n` +
+      `🎯 **Compartilhe este link e ganhe Bellos!**\n` +
+      `📱 **Dica:** Envie para amigos ou grupos!`,
+      0x3498db
+    );
+    
+    await interaction.editReply({ 
+      embeds: [inviteEmbed],
+      ephemeral: true 
+    });
+    
+  } catch (error) {
+    console.error("Erro ao criar convite:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO AO CRIAR CONVITE",
+      "**Não foi possível criar um convite no momento.**\n\nTente novamente mais tarde ou contate um administrador.",
+      0xe74c3c
+    );
+    await interaction.editReply({ embeds: [errorEmbed] });
+  }
+}
+
+async function handleCheckCoins(interaction) {
+  try {
+    const { getUser } = await import('./firebase.js');
+    const userData = await getUser(interaction.user.id);
+    
+    const coinsEmbed = createMilitaryEmbed(
+      "💰 SEU PATRIMÔNIO MILITAR",
+      `**${interaction.user.tag}, aqui está seu relatório financeiro:**\n\n` +
+      `🪙 **Bellos em Caixa:** ${userData.coins.toLocaleString('pt-BR')}\n` +
+      `👥 **Recrutas Convocados:** ${userData.invites}\n` +
+      `🎖️ **Patente Atual:** ${getMilitaryRank(userData.invites)}\n` +
+      `⏰ **Tempo de Serviço:** ${Math.floor(userData.totalTime / 60)} horas\n\n` +
+      `💡 **Use \`/catalogo\` para gastar seus Bellos!**`,
+      0xF1C40F
+    );
+    
+    await interaction.editReply({ 
+      embeds: [coinsEmbed],
+      ephemeral: true 
+    });
+    
+  } catch (error) {
+    console.error("Erro ao verificar moedas:", error);
+    const errorEmbed = createMilitaryEmbed(
+      "❌ ERRO AO VERIFICAR MOEDAS",
+      "**Não foi possível verificar seu saldo no momento.**\n\nTente usar o comando `/moedas`.",
+      0xe74c3c
+    );
+    await interaction.editReply({ embeds: [errorEmbed] });
+  }
+}
+
+// ============================================================
+// 🎁 SISTEMA DE RECOMPENSAS POR CONVITE
+// ============================================================
+
+async function handleInviteRewards(newMember, client) {
+  try {
+    console.log(`🔍 Analisando convites para: ${newMember.user.tag} (${newMember.id})`);
+    
+    const guild = newMember.guild;
+    
+    // Buscar todos os convites do servidor
+    const invites = await guild.invites.fetch();
+    console.log(`📋 ${invites.size} convites encontrados no servidor`);
+    
+    // Buscar o cache anterior de convites (se existir)
+    const cachedInvites = client.inviteCache || new Map();
+    client.inviteCache = new Map();
+    
+    // Preencher o cache atual
+    invites.forEach(invite => {
+      client.inviteCache.set(invite.code, invite.uses);
+    });
+    
+    // Comparar com o cache anterior para encontrar quem convidou
+    for (const [code, currentUses] of client.inviteCache) {
+      const previousUses = cachedInvites.get(code) || 0;
+      
+      if (currentUses > previousUses) {
+        // Este convite foi usado!
+        const invite = invites.get(code);
+        
+        if (invite && invite.inviter && invite.inviter.id !== client.user.id) {
+          const inviter = invite.inviter;
+          const invited = newMember.user;
+          
+          console.log(`🎯 Convite detectado: ${inviter.tag} (${inviter.id}) convidou ${invited.tag} (${invited.id})`);
+          
+          // Importar funções do Firebase
+          const { registerInvite, hasUserBeenInvited, forceCreateUser } = await import('./firebase.js');
+          
+          // Verificar se é um convite válido (não é duplicata)
+          const alreadyInvited = await hasUserBeenInvited(invited.id);
+          
+          if (alreadyInvited) {
+            console.log(`🚫 ${invited.tag} já foi convidado antes - ignorando recompensa`);
+          } else {
+            try {
+              // Garantir que o convidador existe no banco
+              console.log(`👤 Garantindo que convidador existe: ${inviter.id}`);
+              await forceCreateUser(inviter.id);
+              
+              // Registrar o convite e dar recompensa
+              const result = await registerInvite(inviter.id, invited.id);
+              
+              if (result.success) {
+                console.log(`✅ Recompensa de convite dada para: ${inviter.tag}`);
+  
+                // Atualizar estatística do usuário
+                const { addUserInvite } = await import('./firebase.js');
+                await addUserInvite(inviter.id);
+                
+                // 🔥 NOVO: ENVIAR MENSAGEM BONITA NO CANAL "🎮│・bello"
+                await sendInviteAnnouncement(guild, inviter, invited, client);
+              } else {
+                console.log(`❌ Falha no registro do convite: ${result.reason}`);
+              }
+            } catch (inviteError) {
+              console.error(`❌ Erro crítico no processamento do convite:`, inviteError);
+            }
+          }
+        }
+        break; // Encontrou o convite usado, pode parar
+      }
+    }
+    
+  } catch (error) {
+    console.error(`❌ Erro no sistema de convites:`, error);
+  }
+}
 
 // ============================================================
 // 👋 EVENTO: Quando um membro entra no servidor (CORRIGIDO)
@@ -386,6 +886,9 @@ discordBot.on("guildMemberAdd", async (member) => {
       if (!civilAssigned) {
         console.log(`⚠️ Não foi possível atribuir cargo Civis para: ${member.user.tag}`);
       }
+
+      // ✅ NOVO: SISTEMA DE DETECÇÃO DE CONVITES
+      await handleInviteRewards(member, discordBot);
 
       // ✅ CORREÇÃO: Busca mais flexível do canal de boas-vindas
       const welcomeChannel = member.guild.channels.cache.find(channel => {
